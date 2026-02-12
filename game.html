@@ -46,9 +46,18 @@ canvas{display:block;width:100%;height:100%;image-rendering:pixelated}
   #minimap{width:80px;height:80px;bottom:auto;top:50px;left:10px}
   #hud{font-size:11px;padding:6px 10px}
 }
+#music-btn{background:none;border:2px solid var(--cyan);border-radius:6px;color:var(--cyan);font-size:16px;cursor:pointer;width:36px;height:36px;display:flex;align-items:center;justify-content:center;padding:0;transition:all .15s}
+#music-btn:hover{background:rgba(0,240,255,.15)}
+#music-btn.muted{border-color:#555;color:#555}
+#start-overlay{position:fixed;inset:0;z-index:100;background:rgba(10,10,15,.95);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer}
+#start-overlay h1{font-family:'Orbitron',sans-serif;font-size:clamp(28px,6vw,52px);color:var(--cyan);text-shadow:0 0 30px var(--cyan),0 0 60px rgba(0,240,255,.3);margin-bottom:8px;animation:glitch 3s infinite}
+#start-overlay p{font-family:'Share Tech Mono',monospace;font-size:14px;color:var(--magenta);animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:.4}50%{opacity:1}}
+@keyframes glitch{0%,93%,100%{transform:none}94%{transform:translate(-2px,1px)}96%{transform:translate(2px,-1px)}98%{transform:translate(-1px,2px)}}
 </style>
 </head>
 <body>
+<div id="start-overlay"><h1>CYBR FRNDZ</h1><p>[ TAP TO START ]</p></div>
 <canvas id="game"></canvas>
 <div id="scanlines"></div>
 <div id="hud">
@@ -57,6 +66,7 @@ canvas{display:block;width:100%;height:100%;image-rendering:pixelated}
     <div><span class="hud-label">RP</span> <span class="rp-val" id="h-rp">500</span></div>
   </div>
   <div class="right">
+    <button id="music-btn" title="Toggle Music">🔊</button>
     <div><span class="hud-label">LOC</span> <span class="loc-val" id="h-loc">NEON CITY</span></div>
   </div>
 </div>
@@ -570,6 +580,191 @@ function hexToRgb(hex){
   const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
   return `${r},${g},${b}`;
 }
+
+// ===== PROCEDURAL SYNTHWAVE-LOFI MUSIC ENGINE =====
+let audioCtx=null, musicPlaying=false, musicMuted=false;
+const BPM=78, BEAT=60/BPM, BAR=BEAT*4;
+let masterGain=null, nextBeat=0, beatIndex=0;
+
+// Chord progression: Am - F - C - G (classic lofi)
+const CHORDS=[
+  [220.00,261.63,329.63],  // Am: A3 C4 E4
+  [174.61,220.00,261.63],  // F:  F3 A3 C4
+  [130.81,164.81,196.00],  // C:  C3 E3 G3
+  [146.83,196.00,246.94],  // G:  G3 B3 D4  -- keep it mellow, lower voicing
+];
+// Bass notes for each chord
+const BASS=[110,87.31,65.41,73.42]; // A2 F2 C2 G2
+
+function initAudio(){
+  if(audioCtx)return;
+  audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+  masterGain=audioCtx.createGain();
+  masterGain.gain.value=0.35;
+  masterGain.connect(audioCtx.destination);
+  nextBeat=audioCtx.currentTime+0.05;
+  beatIndex=0;
+  musicPlaying=true;
+  scheduleBeat();
+}
+
+function scheduleBeat(){
+  if(!musicPlaying)return;
+  while(nextBeat<audioCtx.currentTime+0.2){
+    const t=nextBeat;
+    const bar=Math.floor(beatIndex/4)%4;
+    const beat=beatIndex%4;
+
+    // --- KICK on beats 0,2 ---
+    if(beat===0||beat===2)playKick(t);
+    // --- SNARE on beats 1,3 ---
+    if(beat===1||beat===3)playSnare(t);
+    // --- HI-HAT every beat + offbeats ---
+    playHiHat(t);
+    playHiHat(t+BEAT*0.5, 0.03);
+
+    // --- BASS on beat 0 of each bar, sustained ---
+    if(beat===0)playBass(BASS[bar],t,BAR*0.9);
+
+    // --- CHORD PAD: trigger on beat 0, sustain whole bar ---
+    if(beat===0)playPad(CHORDS[bar],t,BAR*0.95);
+
+    // --- MELODY (simple arp on beats) ---
+    const chord=CHORDS[bar];
+    const noteIdx=(beatIndex)%3;
+    playArp(chord[noteIdx]*2,t,BEAT*0.6); // octave up
+
+    beatIndex++;
+    nextBeat+=BEAT;
+  }
+  if(musicPlaying)setTimeout(scheduleBeat,100);
+}
+
+function playKick(t){
+  const o=audioCtx.createOscillator();
+  const g=audioCtx.createGain();
+  o.type='sine';o.frequency.setValueAtTime(150,t);
+  o.frequency.exponentialRampToValueAtTime(30,t+0.12);
+  g.gain.setValueAtTime(0.6,t);
+  g.gain.exponentialRampToValueAtTime(0.001,t+0.25);
+  o.connect(g);g.connect(masterGain);
+  o.start(t);o.stop(t+0.25);
+}
+
+function playSnare(t){
+  // noise burst
+  const len=0.12, sr=audioCtx.sampleRate;
+  const buf=audioCtx.createBuffer(1,sr*len,sr);
+  const d=buf.getChannelData(0);
+  for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1);
+  const n=audioCtx.createBufferSource();n.buffer=buf;
+  const g=audioCtx.createGain();
+  g.gain.setValueAtTime(0.12,t);
+  g.gain.exponentialRampToValueAtTime(0.001,t+len);
+  const f=audioCtx.createBiquadFilter();f.type='highpass';f.frequency.value=3000;
+  n.connect(f);f.connect(g);g.connect(masterGain);
+  n.start(t);n.stop(t+len);
+  // body tone
+  const o=audioCtx.createOscillator();
+  const g2=audioCtx.createGain();
+  o.type='triangle';o.frequency.setValueAtTime(180,t);
+  o.frequency.exponentialRampToValueAtTime(60,t+0.06);
+  g2.gain.setValueAtTime(0.18,t);
+  g2.gain.exponentialRampToValueAtTime(0.001,t+0.08);
+  o.connect(g2);g2.connect(masterGain);
+  o.start(t);o.stop(t+0.08);
+}
+
+function playHiHat(t,vol=0.06){
+  const len=0.05, sr=audioCtx.sampleRate;
+  const buf=audioCtx.createBuffer(1,sr*len,sr);
+  const d=buf.getChannelData(0);
+  for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1);
+  const n=audioCtx.createBufferSource();n.buffer=buf;
+  const g=audioCtx.createGain();
+  g.gain.setValueAtTime(vol,t);
+  g.gain.exponentialRampToValueAtTime(0.001,t+len);
+  const f=audioCtx.createBiquadFilter();f.type='highpass';f.frequency.value=7000;
+  n.connect(f);f.connect(g);g.connect(masterGain);
+  n.start(t);n.stop(t+len);
+}
+
+function playBass(freq,t,dur){
+  const o=audioCtx.createOscillator();
+  const g=audioCtx.createGain();
+  const f=audioCtx.createBiquadFilter();
+  o.type='sawtooth';o.frequency.value=freq;
+  f.type='lowpass';f.frequency.setValueAtTime(300,t);
+  // lofi filter sweep
+  f.frequency.linearRampToValueAtTime(600,t+dur*0.3);
+  f.frequency.linearRampToValueAtTime(250,t+dur);
+  g.gain.setValueAtTime(0.22,t);
+  g.gain.setValueAtTime(0.22,t+dur*0.8);
+  g.gain.exponentialRampToValueAtTime(0.001,t+dur);
+  o.connect(f);f.connect(g);g.connect(masterGain);
+  o.start(t);o.stop(t+dur+0.01);
+}
+
+function playPad(notes,t,dur){
+  notes.forEach((freq,i)=>{
+    const o=audioCtx.createOscillator();
+    const g=audioCtx.createGain();
+    const f=audioCtx.createBiquadFilter();
+    o.type='sawtooth';
+    // slight detune for warmth
+    o.frequency.value=freq;
+    o.detune.value=(i-1)*8;
+    f.type='lowpass';
+    // slow filter sweep for that lofi warmth
+    f.frequency.setValueAtTime(800,t);
+    f.frequency.linearRampToValueAtTime(1400,t+dur*0.4);
+    f.frequency.linearRampToValueAtTime(600,t+dur);
+    f.Q.value=2;
+    g.gain.setValueAtTime(0,t);
+    g.gain.linearRampToValueAtTime(0.045,t+0.1);
+    g.gain.setValueAtTime(0.045,t+dur*0.7);
+    g.gain.exponentialRampToValueAtTime(0.001,t+dur);
+    o.connect(f);f.connect(g);g.connect(masterGain);
+    o.start(t);o.stop(t+dur+0.01);
+  });
+}
+
+function playArp(freq,t,dur){
+  const o=audioCtx.createOscillator();
+  const g=audioCtx.createGain();
+  const f=audioCtx.createBiquadFilter();
+  o.type='triangle';o.frequency.value=freq;
+  f.type='lowpass';f.frequency.value=2000;f.Q.value=1;
+  g.gain.setValueAtTime(0,t);
+  g.gain.linearRampToValueAtTime(0.07,t+0.02);
+  g.gain.setValueAtTime(0.07,t+dur*0.5);
+  g.gain.exponentialRampToValueAtTime(0.001,t+dur);
+  o.connect(f);f.connect(g);g.connect(masterGain);
+  o.start(t);o.stop(t+dur+0.01);
+}
+
+// Start overlay
+document.getElementById('start-overlay').addEventListener('click',()=>{
+  document.getElementById('start-overlay').style.display='none';
+  initAudio();
+});
+
+// Music toggle
+document.getElementById('music-btn').addEventListener('click',()=>{
+  if(!audioCtx)return;
+  musicMuted=!musicMuted;
+  masterGain.gain.linearRampToValueAtTime(musicMuted?0:0.35,audioCtx.currentTime+0.1);
+  const btn=document.getElementById('music-btn');
+  btn.textContent=musicMuted?'🔇':'🔊';
+  btn.classList.toggle('muted',musicMuted);
+});
+
+// Also handle M key for music toggle
+addEventListener('keydown',e=>{
+  if(e.code==='KeyM'&&audioCtx){
+    document.getElementById('music-btn').click();
+  }
+});
 
 // ===== GAME LOOP =====
 let lastTime=0;

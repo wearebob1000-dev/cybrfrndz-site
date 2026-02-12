@@ -538,8 +538,13 @@ footer .footer-logo { font-family: 'Orbitron', sans-serif; color: var(--cyan); t
   .city-map { height: 200px; }
   .room-scene { height: 280px; }
   .room-window { width: 260px; height: 150px; }
-  .economy-flow { flex-direction: column; align-items: center; }
-  .eco-arrow { transform: rotate(90deg); }
+  .economy-flow { flex-direction: column; align-items: center; gap: 8px; }
+  .eco-arrow { transform: rotate(90deg); margin: -4px 0; }
+  .eco-node { min-width: 200px; width: 100%; max-width: 260px; padding: 16px; }
+  .eco-node .icon { font-size: 1.5rem; margin-bottom: 4px; }
+  .eco-row-2 { flex-direction: column !important; align-items: center; gap: 8px; }
+  .eco-row-2 .eco-node { display: block !important; min-width: 200px; width: 100%; max-width: 260px; }
+  .eco-row-2 .eco-arrow { display: block !important; transform: rotate(90deg); margin: -4px auto; }
   .waitlist-form { flex-direction: column; }
   .waitlist-form input { border-right: 1px solid rgba(0,240,255,0.2); }
 }
@@ -740,12 +745,12 @@ footer .footer-logo { font-family: 'Orbitron', sans-serif; color: var(--cyan); t
     <span class="eco-arrow">→</span>
     <div class="eco-node"><span class="icon">👤</span><span class="label">OUTFITS<br>& SKINS</span></div>
   </div>
-  <div style="text-align:center; margin-top:28px;" class="reveal">
-    <div class="eco-node" style="display:inline-block;"><span class="icon">📋</span><span class="label">TEACHERS<br><small style="color:var(--cyan)">awards</small></span></div>
-    <span class="eco-arrow" style="display:inline-block; vertical-align:middle;">→</span>
-    <div class="eco-node eco-center" style="display:inline-block;"><span class="icon">⚡</span><span class="label">BONUS RP</span></div>
-    <span class="eco-arrow" style="display:inline-block; vertical-align:middle;">→</span>
-    <div class="eco-node" style="display:inline-block;"><span class="icon">🎮</span><span class="label">RARE<br>ITEMS</span></div>
+  <div class="economy-flow eco-row-2 reveal" style="margin-top:28px;">
+    <div class="eco-node"><span class="icon">📋</span><span class="label">TEACHERS<br><small style="color:var(--cyan)">awards</small></span></div>
+    <span class="eco-arrow">→</span>
+    <div class="eco-node eco-center"><span class="icon">⚡</span><span class="label">BONUS RP</span></div>
+    <span class="eco-arrow">→</span>
+    <div class="eco-node"><span class="icon">🎮</span><span class="label">RARE<br>ITEMS</span></div>
   </div>
 </section>
 
