@@ -1304,17 +1304,36 @@ document.querySelectorAll('.band-swatch').forEach(sw => {
 });
 
 // ====== WAITLIST ======
+const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbx91pPMgbLTozRRGTDQGLGS5KMQ4O7Faouwl7Hs2_r0FmKs5IJfDV1t5-AKPIpQd4U/exec';
+
 function handleWaitlist() {
   const email = document.getElementById('waitlistEmail').value;
   const msg = document.getElementById('waitlistMsg');
+  const btn = document.querySelector('.waitlist-form button');
   if (!email || !email.includes('@')) {
     msg.textContent = '// ERROR: INVALID EMAIL';
     msg.style.color = 'var(--magenta)';
     return;
   }
-  msg.textContent = '// ACCESS GRANTED — WELCOME TO CYBR FRNDZ';
-  msg.style.color = 'var(--cyan)';
-  document.getElementById('waitlistEmail').value = '';
+  btn.textContent = 'SENDING...';
+  btn.disabled = true;
+  fetch(SHEETS_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: email, timestamp: new Date().toISOString(), source: 'cybrfrndz.com' })
+  }).then(() => {
+    msg.textContent = '// ACCESS GRANTED — WELCOME TO CYBR FRNDZ';
+    msg.style.color = 'var(--cyan)';
+    document.getElementById('waitlistEmail').value = '';
+    btn.textContent = 'SUBMITTED ✓';
+    setTimeout(() => { btn.textContent = 'SUBMIT'; btn.disabled = false; }, 3000);
+  }).catch(() => {
+    msg.textContent = '// CONNECTION ERROR — TRY AGAIN';
+    msg.style.color = 'var(--magenta)';
+    btn.textContent = 'SUBMIT';
+    btn.disabled = false;
+  });
 }
 </script>
 </body>
