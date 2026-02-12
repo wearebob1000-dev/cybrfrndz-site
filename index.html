@@ -1317,11 +1317,13 @@ function handleWaitlist() {
   }
   btn.textContent = 'SENDING...';
   btn.disabled = true;
+  const form = new FormData();
+  form.append('email', email);
+  form.append('timestamp', new Date().toISOString());
+  form.append('source', 'cybrfrndz.com');
   fetch(SHEETS_URL, {
     method: 'POST',
-    mode: 'no-cors',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email: email, timestamp: new Date().toISOString(), source: 'cybrfrndz.com' })
+    body: form
   }).then(() => {
     msg.textContent = '// ACCESS GRANTED — WELCOME TO CYBR FRNDZ';
     msg.style.color = 'var(--cyan)';
