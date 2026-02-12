@@ -2,791 +2,1205 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>CYBR FRNDZ</title>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <style>
-:root{--cyan:#00f0ff;--magenta:#ff00aa;--purple:#a855f7;--green:#00ff88;--yellow:#ffe600;--bg:#0a0a0f;--grid:#1a1a2e}
-*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-family:'Share Tech Mono',monospace;color:#fff;touch-action:none}
-canvas{display:block;width:100%;height:100%;image-rendering:pixelated}
-#scanlines{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:10;background:repeating-linear-gradient(0deg,rgba(0,0,0,.08) 0px,rgba(0,0,0,.08) 2px,transparent 2px,transparent 4px)}
-#hud{position:fixed;top:0;left:0;right:0;z-index:20;display:flex;justify-content:space-between;align-items:center;padding:8px 16px;background:rgba(10,10,15,.85);border-bottom:2px solid var(--cyan);font-family:'Orbitron',sans-serif;font-size:13px}
-#hud .left,#hud .right{display:flex;align-items:center;gap:12px}
-.hud-label{color:var(--cyan);font-size:10px;text-transform:uppercase;letter-spacing:1px}
-.hud-val{color:#fff;font-weight:700;text-shadow:0 0 8px var(--cyan)}
-.rp-val{color:var(--yellow);text-shadow:0 0 8px var(--yellow)}
-.loc-val{color:var(--magenta);text-shadow:0 0 8px var(--magenta)}
-#tap-btn{position:fixed;bottom:20px;right:20px;z-index:20;width:70px;height:70px;border-radius:50%;background:radial-gradient(circle,var(--cyan),#006080);border:3px solid var(--cyan);color:#000;font-family:'Orbitron',sans-serif;font-weight:900;font-size:14px;cursor:pointer;box-shadow:0 0 20px var(--cyan),inset 0 0 10px rgba(0,240,255,.3);transition:all .15s;display:flex;align-items:center;justify-content:center}
-#tap-btn:active{transform:scale(.9);box-shadow:0 0 40px var(--cyan)}
-#tap-btn.cooldown{background:radial-gradient(circle,#333,#111);border-color:#555;color:#555;box-shadow:none}
-#minimap{position:fixed;bottom:20px;left:20px;z-index:20;width:120px;height:120px;border:2px solid var(--purple);background:rgba(10,10,15,.8);border-radius:4px}
-#inv-toggle{position:fixed;top:50px;right:16px;z-index:20;width:40px;height:40px;border:2px solid var(--purple);background:rgba(10,10,15,.8);border-radius:6px;color:var(--purple);font-family:'Orbitron',sans-serif;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center}
-#inventory{position:fixed;top:50px;right:0;z-index:25;width:260px;height:calc(100% - 60px);background:rgba(10,10,15,.95);border-left:2px solid var(--purple);transform:translateX(100%);transition:transform .3s;overflow-y:auto;padding:12px}
-#inventory.open{transform:translateX(0)}
-#inventory h3{font-family:'Orbitron',sans-serif;font-size:14px;color:var(--purple);margin-bottom:10px;text-shadow:0 0 8px var(--purple)}
-.inv-item{display:flex;align-items:center;gap:8px;padding:8px;margin-bottom:6px;border:1px solid rgba(168,85,247,.3);border-radius:4px;cursor:pointer;transition:all .15s}
-.inv-item:hover{border-color:var(--purple);background:rgba(168,85,247,.1)}
-.inv-item canvas{border-radius:2px;image-rendering:pixelated}
-.inv-name{font-size:12px;color:#ccc;flex:1}
-.inv-cost{font-size:11px;color:var(--yellow);font-family:'Orbitron',sans-serif}
-#dpad{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:20;display:none;width:140px;height:140px}
-.dpad-btn{position:absolute;width:44px;height:44px;background:rgba(0,240,255,.15);border:2px solid var(--cyan);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--cyan)}
-.dpad-btn:active{background:rgba(0,240,255,.4)}
-#dpad .up{top:0;left:50%;transform:translateX(-50%)}
-#dpad .down{bottom:0;left:50%;transform:translateX(-50%)}
-#dpad .left{left:0;top:50%;transform:translateY(-50%)}
-#dpad .right{right:0;top:50%;transform:translateY(-50%)}
-#dpad .act{top:50%;left:50%;transform:translate(-50%,-50%);border-color:var(--green);color:var(--green);font-size:12px;font-family:'Orbitron',sans-serif;background:rgba(0,255,136,.15)}
-#toast{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:30;font-family:'Orbitron',sans-serif;font-size:16px;color:var(--green);text-shadow:0 0 12px var(--green);opacity:0;transition:opacity .3s;pointer-events:none}
-#prompt{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);z-index:20;font-family:'Orbitron',sans-serif;font-size:12px;color:var(--cyan);text-shadow:0 0 8px var(--cyan);opacity:0;transition:opacity .3s;pointer-events:none;text-align:center}
-@media(max-width:768px){
-  #dpad{display:block}
-  #tap-btn{bottom:100px;right:10px;width:60px;height:60px;font-size:12px}
-  #minimap{width:80px;height:80px;bottom:auto;top:50px;left:10px}
-  #hud{font-size:11px;padding:6px 10px}
-}
-#music-btn{background:none;border:2px solid var(--cyan);border-radius:6px;color:var(--cyan);font-size:16px;cursor:pointer;width:36px;height:36px;display:flex;align-items:center;justify-content:center;padding:0;transition:all .15s}
-#music-btn:hover{background:rgba(0,240,255,.15)}
-#music-btn.muted{border-color:#555;color:#555}
-#start-overlay{position:fixed;inset:0;z-index:100;background:rgba(10,10,15,.95);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer}
-#start-overlay h1{font-family:'Orbitron',sans-serif;font-size:clamp(28px,6vw,52px);color:var(--cyan);text-shadow:0 0 30px var(--cyan),0 0 60px rgba(0,240,255,.3);margin-bottom:8px;animation:glitch 3s infinite}
-#start-overlay p{font-family:'Share Tech Mono',monospace;font-size:14px;color:var(--magenta);animation:pulse 1.5s infinite}
-@keyframes pulse{0%,100%{opacity:.4}50%{opacity:1}}
-@keyframes glitch{0%,93%,100%{transform:none}94%{transform:translate(-2px,1px)}96%{transform:translate(2px,-1px)}98%{transform:translate(-1px,2px)}}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #0a0a0f; overflow: hidden; display: flex; align-items: center; justify-content: center; height: 100vh; font-family: 'Share Tech Mono', monospace; }
+#game-container { position: relative; }
+canvas { display: block; image-rendering: pixelated; }
+/* Loading screen */
+#loading { position: fixed; inset: 0; background: #0a0a0f; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; transition: opacity 0.5s; }
+#loading.hidden { opacity: 0; pointer-events: none; }
+#loading h1 { font-family: 'Orbitron', sans-serif; font-size: 2.5rem; margin-bottom: 8px; }
+#loading .cf-c { color: #00f0ff; text-shadow: 0 0 15px #00f0ff; }
+#loading .cf-f { color: #ff00aa; text-shadow: 0 0 15px #ff00aa; margin-left: -8px; }
+#loading p { color: #8888aa; font-size: 0.9rem; margin-top: 16px; }
+#loading .bar-outer { width: 200px; height: 4px; background: #111; margin-top: 24px; border: 1px solid rgba(0,240,255,0.2); }
+#loading .bar-inner { height: 100%; width: 0%; background: linear-gradient(90deg, #00f0ff, #ff00aa); transition: width 0.3s; }
 </style>
 </head>
 <body>
-<div id="start-overlay"><h1>CYBR FRNDZ</h1><p>[ TAP TO START ]</p></div>
-<canvas id="game"></canvas>
-<div id="scanlines"></div>
-<div id="hud">
-  <div class="left">
-    <div><span class="hud-label">PLAYER</span> <span class="hud-val" id="h-name">CYBR_KID</span></div>
-    <div><span class="hud-label">RP</span> <span class="rp-val" id="h-rp">500</span></div>
-  </div>
-  <div class="right">
-    <button id="music-btn" title="Toggle Music">🔊</button>
-    <div><span class="hud-label">LOC</span> <span class="loc-val" id="h-loc">NEON CITY</span></div>
-  </div>
+<div id="loading">
+  <h1><span class="cf-c">C</span><span class="cf-f">F</span></h1>
+  <p>LOADING NEON DISTRICT...</p>
+  <div class="bar-outer"><div class="bar-inner" id="loadBar"></div></div>
 </div>
-<button id="tap-btn">TAP</button>
-<canvas id="minimap"></canvas>
-<button id="inv-toggle">I</button>
-<div id="inventory"><h3>⚡ INVENTORY</h3><div id="inv-list"></div></div>
-<div id="dpad">
-  <div class="dpad-btn up" data-dir="up">▲</div>
-  <div class="dpad-btn down" data-dir="down">▼</div>
-  <div class="dpad-btn left" data-dir="left">◀</div>
-  <div class="dpad-btn right" data-dir="right">▶</div>
-  <div class="dpad-btn act" data-dir="act">E</div>
-</div>
-<div id="toast"></div>
-<div id="prompt"></div>
-
+<div id="game-container"></div>
+<script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script>
 <script>
-// ===== GAME ENGINE =====
-const C = document.getElementById('game'), ctx = C.getContext('2d');
-const MC = document.getElementById('minimap'), mctx = MC.getContext('2d');
-let W, H, T = 32; // tile size
-const COLORS = {cyan:'#00f0ff',magenta:'#ff00aa',purple:'#a855f7',green:'#00ff88',yellow:'#ffe600',bg:'#0a0a0f',grid:'#1a1a2e'};
+// ============================================================
+// CYBR FRNDZ — Main Game
+// Minecraft × Animal Crossing × Tron
+// ============================================================
 
-function resize(){W=C.width=innerWidth;H=C.height=innerHeight;MC.width=MC.offsetWidth;MC.height=MC.offsetHeight}
-resize(); addEventListener('resize',resize);
-
-// ===== STATE =====
-let rp = parseInt(localStorage.getItem('cybr_rp'))||500;
-let scene = 'city'; // city | apartment
-let currentApt = null; // which apartment we're in
-let invOpen = false;
-let placingItem = null;
-
-const player = {x:14*T,y:18*T,w:T*.8,h:T*.8,spd:3,dir:0,frame:0,frameT:0};
-const keys = {};
-let promptText = '', promptAlpha = 0;
-let toastText = '', toastTimer = 0;
-
-// ===== CITY MAP (30x30) =====
-// 0=road, 1=building, 2=door, 3=sidewalk, 9=park
-const CITY_W = 30, CITY_H = 30;
-const cityMap = [];
-for(let i=0;i<CITY_H;i++){cityMap[i]=[];for(let j=0;j<CITY_W;j++)cityMap[i][j]=0}
-
-// Buildings layout
-const buildings = [
-  {name:"PIXEL's PAD",x:3,y:3,w:5,h:4,door:{x:5,y:7},color:COLORS.cyan,npc:'PIXEL',
-   furniture:[{t:'bed',x:1,y:1},{t:'pc',x:3,y:1},{t:'neon_sign',x:2,y:0},{t:'plant',x:0,y:3},{t:'speakers',x:4,y:3}],
-   msg:"Yo! Check out my setup. I just got the hologram projector 🔥"},
-  {name:"NOVA's SPACE",x:14,y:3,w:5,h:4,door:{x:16,y:7},color:COLORS.magenta,npc:'NOVA',
-   furniture:[{t:'desk',x:1,y:1},{t:'hologram',x:3,y:1},{t:'led_strips',x:0,y:0},{t:'chair',x:1,y:2},{t:'poster',x:4,y:0},{t:'rug',x:2,y:2}],
-   msg:"Welcome to my creative space! Love your fit btw ✨"},
-  {name:"GLITCH's DEN",x:24,y:3,w:5,h:4,door:{x:26,y:7},color:COLORS.green,npc:'GLITCH',
-   furniture:[{t:'pc',x:1,y:1},{t:'pc',x:2,y:1},{t:'crate',x:4,y:3},{t:'lamp',x:0,y:0},{t:'shelves',x:4,y:0},{t:'speakers',x:0,y:3}],
-   msg:"I'm working on a hack... I mean, a totally legal project 💀"},
-  {name:"YOUR APT",x:14,y:14,w:5,h:4,door:{x:16,y:18},color:COLORS.yellow,npc:null,
-   furniture:JSON.parse(localStorage.getItem('cybr_apt')||'[]'),
-   msg:null},
-];
-
-// Fill city map with buildings
-buildings.forEach(b=>{
-  for(let y=b.y;y<b.y+b.h;y++)for(let x=b.x;x<b.x+b.w;x++)cityMap[y][x]=1;
-  cityMap[b.door.y][b.door.x]=2;
-  // sidewalk around building
-  for(let y=b.y-1;y<=b.y+b.h;y++)for(let x=b.x-1;x<=b.x+b.w;x++){
-    if(y>=0&&y<CITY_H&&x>=0&&x<CITY_W&&cityMap[y][x]===0)cityMap[y][x]=3;
-  }
-});
-
-// Parks
-[[8,12,4,3],[22,12,4,3],[8,22,4,3],[22,22,4,3]].forEach(([px,py,pw,ph])=>{
-  for(let y=py;y<py+ph;y++)for(let x=px;x<px+pw;x++)if(y<CITY_H&&x<CITY_W)cityMap[y][x]=9;
-});
-
-// ===== FURNITURE CATALOG =====
-const FURNITURE = {
-  bed:{name:'Bed',cost:50,w:2,h:1,color:COLORS.magenta,icon:(c,x,y,s)=>{c.fillStyle=COLORS.magenta;c.fillRect(x+2,y+2,s*2-4,s-4);c.fillStyle='#fff';c.fillRect(x+2,y+2,s*.4,s-4)}},
-  desk:{name:'Desk',cost:40,w:2,h:1,color:COLORS.cyan,icon:(c,x,y,s)=>{c.fillStyle='#4a3728';c.fillRect(x+2,y+s*.4,s*2-4,s*.5);c.fillStyle=COLORS.cyan;c.fillRect(x+4,y+s*.4,s*2-8,2)}},
-  pc:{name:'PC Setup',cost:80,w:1,h:1,color:COLORS.cyan,icon:(c,x,y,s)=>{c.fillStyle='#222';c.fillRect(x+4,y+2,s-8,s*.6);c.fillStyle=COLORS.cyan;c.fillRect(x+6,y+4,s-12,s*.6-4);c.fillStyle='#333';c.fillRect(x+s*.3,y+s*.6,s*.4,s*.3)}},
-  neon_sign:{name:'Neon Sign',cost:60,w:1,h:1,color:COLORS.magenta,icon:(c,x,y,s)=>{c.strokeStyle=COLORS.magenta;c.lineWidth=2;c.strokeRect(x+4,y+4,s-8,s-8);c.fillStyle=COLORS.magenta;c.font=`${s*.3}px Orbitron`;c.textAlign='center';c.fillText('CYBR',x+s/2,y+s*.55)}},
-  speakers:{name:'Speakers',cost:45,w:1,h:1,color:COLORS.purple,icon:(c,x,y,s)=>{c.fillStyle='#222';c.fillRect(x+4,y+2,s-8,s-4);c.fillStyle=COLORS.purple;c.beginPath();c.arc(x+s/2,y+s/2,s*.2,0,Math.PI*2);c.fill()}},
-  plant:{name:'Neon Plant',cost:25,w:1,h:1,color:COLORS.green,icon:(c,x,y,s)=>{c.fillStyle='#333';c.fillRect(x+s*.3,y+s*.6,s*.4,s*.35);c.fillStyle=COLORS.green;c.beginPath();c.moveTo(x+s/2,y+2);c.lineTo(x+s-4,y+s*.6);c.lineTo(x+4,y+s*.6);c.fill()}},
-  led_strips:{name:'LED Strips',cost:35,w:1,h:1,color:COLORS.cyan,icon:(c,x,y,s)=>{for(let i=0;i<4;i++){c.fillStyle=[COLORS.cyan,COLORS.magenta,COLORS.purple,COLORS.green][i];c.fillRect(x+4,y+4+i*(s-8)/4,s-8,((s-8)/4)-2)}}},
-  poster:{name:'Poster',cost:20,w:1,h:1,color:COLORS.yellow,icon:(c,x,y,s)=>{c.fillStyle='#333';c.fillRect(x+4,y+2,s-8,s-4);c.fillStyle=COLORS.yellow;c.fillRect(x+6,y+4,s-12,s-8);c.fillStyle='#000';c.font=`${s*.2}px monospace`;c.textAlign='center';c.fillText('CYBR',x+s/2,y+s*.55)}},
-  hologram:{name:'Hologram',cost:100,w:1,h:1,color:COLORS.cyan,icon:(c,x,y,s)=>{c.fillStyle='rgba(0,240,255,.2)';c.beginPath();c.moveTo(x+s/2,y+2);c.lineTo(x+s-2,y+s-2);c.lineTo(x+2,y+s-2);c.fill();c.strokeStyle=COLORS.cyan;c.lineWidth=1;c.stroke()}},
-  shelves:{name:'Shelves',cost:30,w:1,h:1,color:'#8B7355',icon:(c,x,y,s)=>{c.fillStyle='#5a4020';for(let i=0;i<3;i++)c.fillRect(x+4,y+4+i*(s-4)/3,s-8,3);c.fillStyle=COLORS.cyan;c.fillRect(x+6,y+6,4,4)}},
-  rug:{name:'Neon Rug',cost:30,w:2,h:2,color:COLORS.purple,icon:(c,x,y,s)=>{c.fillStyle='rgba(168,85,247,.3)';c.fillRect(x+2,y+2,s-4,s-4);c.strokeStyle=COLORS.purple;c.lineWidth=1;c.strokeRect(x+4,y+4,s-8,s-8)}},
-  chair:{name:'Chair',cost:20,w:1,h:1,color:'#666',icon:(c,x,y,s)=>{c.fillStyle='#444';c.fillRect(x+s*.2,y+s*.3,s*.6,s*.6);c.fillStyle='#555';c.fillRect(x+s*.2,y+2,s*.6,s*.35)}},
-  lamp:{name:'Neon Lamp',cost:30,w:1,h:1,color:COLORS.yellow,icon:(c,x,y,s)=>{c.fillStyle='#333';c.fillRect(x+s*.4,y+s*.4,s*.2,s*.55);c.fillStyle=COLORS.yellow;c.beginPath();c.arc(x+s/2,y+s*.3,s*.25,0,Math.PI*2);c.fill();c.globalAlpha=.2;c.fillStyle=COLORS.yellow;c.beginPath();c.arc(x+s/2,y+s*.3,s*.4,0,Math.PI*2);c.fill();c.globalAlpha=1}},
-  crate:{name:'Crate',cost:15,w:1,h:1,color:'#8B6914',icon:(c,x,y,s)=>{c.fillStyle='#5a4010';c.fillRect(x+3,y+3,s-6,s-6);c.strokeStyle='#8B6914';c.lineWidth=1;c.strokeRect(x+3,y+3,s-6,s-6);c.beginPath();c.moveTo(x+3,y+s/2);c.lineTo(x+s-3,y+s/2);c.stroke()}},
+// -- CONSTANTS --
+const TILE = 32;
+const CITY_W = 40;
+const CITY_H = 30;
+const COLORS = {
+  cyan: 0x00f0ff, magenta: 0xff00aa, purple: 0xa855f7,
+  green: 0x00ff88, yellow: 0xffe600, pink: 0xff2d95,
+  bg: 0x0a0a0f, bg2: 0x0d0d18, grid: 0x111126,
+  road: 0x0a0a14, wall: 0x0d0d20
 };
 
-// ===== APARTMENT ROOM =====
-const APT_W = 10, APT_H = 8;
-
-// ===== RENDER FUNCS =====
-function drawGrid(ox,oy,gw,gh,tileSize){
-  ctx.strokeStyle='rgba(26,26,46,.8)';
-  ctx.lineWidth=1;
-  for(let x=0;x<=gw;x++){ctx.beginPath();ctx.moveTo(ox+x*tileSize,oy);ctx.lineTo(ox+x*tileSize,oy+gh*tileSize);ctx.stroke()}
-  for(let y=0;y<=gh;y++){ctx.beginPath();ctx.moveTo(ox,oy+y*tileSize);ctx.lineTo(ox+gw*tileSize,oy+y*tileSize);ctx.stroke()}
-}
-
-function drawPlayer(px,py,t){
-  const f=Math.floor(t/200)%2;
-  const bx=px, by=py;
-  // body
-  ctx.fillStyle=COLORS.cyan;
-  ctx.fillRect(bx+4,by+8,player.w-8,player.h-12);
-  // head
-  ctx.fillStyle='#222';
-  ctx.fillRect(bx+3,by+1,player.w-6,10);
-  ctx.fillStyle=COLORS.cyan;
-  ctx.fillRect(bx+5,by+2,player.w-10,8);
-  // eyes
-  ctx.fillStyle='#fff';
-  ctx.fillRect(bx+7,by+4,3,3);
-  ctx.fillRect(bx+player.w-10,by+4,3,3);
-  // legs
-  const legOff=f*2-1;
-  ctx.fillStyle=COLORS.purple;
-  ctx.fillRect(bx+6,by+player.h-6,4,6);
-  ctx.fillRect(bx+player.w-10,by+player.h-6+legOff,4,6);
-  // glow
-  ctx.shadowColor=COLORS.cyan;ctx.shadowBlur=12;
-  ctx.strokeStyle=COLORS.cyan;ctx.lineWidth=1;
-  ctx.strokeRect(bx+2,by,player.w-4,player.h);
-  ctx.shadowBlur=0;
-}
-
-function drawNPC(px,py,color,name,msg,t){
-  const bx=px,by=py;
-  ctx.fillStyle=color;ctx.fillRect(bx+4,by+8,T*.8-8,T*.8-12);
-  ctx.fillStyle='#222';ctx.fillRect(bx+3,by+1,T*.8-6,10);
-  ctx.fillStyle=color;ctx.fillRect(bx+5,by+2,T*.8-10,8);
-  ctx.fillStyle='#fff';ctx.fillRect(bx+7,by+4,3,3);ctx.fillRect(bx+T*.8-10,by+4,3,3);
-  ctx.fillStyle=color;ctx.fillRect(bx+6,by+T*.8-6,4,6);ctx.fillRect(bx+T*.8-10,by+T*.8-6,4,6);
-  ctx.shadowColor=color;ctx.shadowBlur=8;
-  ctx.strokeStyle=color;ctx.lineWidth=1;ctx.strokeRect(bx+2,by,T*.8-4,T*.8);
-  ctx.shadowBlur=0;
-  // name
-  ctx.fillStyle=color;ctx.font='bold 10px Orbitron';ctx.textAlign='center';
-  ctx.fillText(name,bx+T*.4,by-4);
-  // speech bubble
-  if(msg){
-    const bw=Math.min(msg.length*5.5+16,180);
-    const bh=30;
-    const bxp=bx+T*.4-bw/2;
-    const byp=by-38;
-    ctx.fillStyle='rgba(10,10,15,.9)';
-    ctx.strokeStyle=color;ctx.lineWidth=1;
-    ctx.beginPath();ctx.roundRect(bxp,byp,bw,bh,4);ctx.fill();ctx.stroke();
-    ctx.fillStyle='#ddd';ctx.font='9px Share Tech Mono';ctx.textAlign='center';
-    ctx.fillText(msg,bx+T*.4,byp+18);
+// -- SAVE SYSTEM --
+const Save = {
+  data: {
+    rp: 500,
+    inventory: [],
+    room: [],
+    friends: [],
+    name: 'PLAYER',
+    avatar: { skin: 0x00f0ff, outfit: 0xa855f7, acc: null },
+    quests: {},
+    visited: {},
+    day: 1
+  },
+  load() {
+    try {
+      const s = localStorage.getItem('cybrfrndz_save');
+      if (s) Object.assign(this.data, JSON.parse(s));
+    } catch(e) {}
+  },
+  save() {
+    try { localStorage.setItem('cybrfrndz_save', JSON.stringify(this.data)); } catch(e) {}
+  },
+  earnRP(amount) { this.data.rp += amount; this.save(); },
+  spendRP(amount) {
+    if (this.data.rp < amount) return false;
+    this.data.rp -= amount; this.save(); return true;
   }
-}
+};
+Save.load();
 
-function drawFurniture(c,item,gx,gy,tileSize,glow){
-  const def=FURNITURE[item.t];
-  if(!def)return;
-  const px=gx+item.x*tileSize, py=gy+item.y*tileSize;
-  const fw=(def.w||1)*tileSize, fh=(def.h||1)*tileSize;
-  if(glow){
-    c.shadowColor=def.color;c.shadowBlur=15;
-    c.strokeStyle=def.color;c.lineWidth=2;c.strokeRect(px,py,fw,fh);
-    c.shadowBlur=0;
+// -- DIALOGUE DATA --
+const DIALOGUES = {
+  pixel: {
+    name: 'PIXEL', color: 0x00f0ff, emoji: '🎨',
+    lines: [
+      { text: "Hey there, frnd! Welcome to Neon District!", responses: ["Thanks! Cool place.", "Who are you?"] },
+      { text: "I'm Pixel — the resident artist around here. Everything's a canvas if you're brave enough!", responses: ["I like that vibe!", "Can I see your apartment?"] },
+      { text: "You should totally decorate your apartment! Express yourself. That's what RP is for.", responses: ["How do I earn RP?", "I will!"] },
+      { text: "Earn RP by tapping friends IRL! Or help me out — I've got a challenge for you.", responses: ["What challenge?", "Maybe later."] },
+      { text: "Decorate your room with at least 5 items and I'll give you 50 bonus RP. Deal?", responses: ["Deal!", "I'll think about it."] },
+    ],
+    quest: { id: 'pixel_decorate', desc: 'Place 5 items in your apartment', target: 5, reward: 50 }
+  },
+  nova: {
+    name: 'NOVA', color: 0xa855f7, emoji: '🔧',
+    lines: [
+      { text: "Oh! A visitor. Fascinating. Did you know NFC operates at 13.56 MHz?", responses: ["That IS cool!", "Um, sure?"] },
+      { text: "I'm Nova. I build things. Circuits, gadgets, the occasional hologram projector.", responses: ["Teach me!", "Nice apartment."] },
+      { text: "Your wristband is basically a tiny computer. The RFID chip stores your tap data offline.", responses: ["How many taps?", "Wow."] },
+      { text: "About 1,000 taps! Then you sync at home. I designed the sync protocol myself.", responses: ["Impressive!", "Can you help me?"] },
+      { text: "Tell you what — explore the whole district and I'll craft you something special. 75 RP.", responses: ["I'll explore!", "Not now."] },
+    ],
+    quest: { id: 'nova_explore', desc: 'Visit all 4 buildings in the district', target: 4, reward: 75 }
+  },
+  glitch: {
+    name: 'GLITCH', color: 0x00ff88, emoji: '🎵',
+    lines: [
+      { text: "Yooo what's good! You hear that beat? That's my latest mix.", responses: ["Sounds amazing!", "It's... loud."] },
+      { text: "Haha yeah it's loud. That's the POINT. I'm Glitch — DJ, producer, vibe curator.", responses: ["Love the setup!", "Teach me to DJ!"] },
+      { text: "Life's a beat, frnd. You just gotta find your rhythm. Know what I mean?", responses: ["Deep.", "Not really lol."] },
+      { text: "Ha! Fair. Hey, help me test something — place a speaker in your room and crank it.", responses: ["On it!", "What's in it for me?"] },
+      { text: "I'll hook you up with 40 RP AND a rare LED strip. The GOOD one. Deal?", responses: ["Deal!", "Maybe later."] },
+    ],
+    quest: { id: 'glitch_speaker', desc: 'Place a speaker in your apartment', target: 1, reward: 40 }
+  },
+  echo: {
+    name: 'ECHO', color: 0xffe600, emoji: '🗺️',
+    lines: [
+      { text: "...oh. You found me. Most people walk right past.", responses: ["Hard to miss you!", "Who are you?"] },
+      { text: "I'm Echo. I explore. Map things. Find secrets. This district has more than you'd think.", responses: ["Like what?", "Secrets?"] },
+      { text: "Like... there's a hidden message in the park. And a rare item behind the arcade.", responses: ["Tell me more!", "I'll find them myself."] },
+      { text: "That's the spirit. Explorers don't need directions — they need curiosity.", responses: ["I'm curious!", "Give me a hint?"] },
+      { text: "Fine, one hint: the neon trees aren't all the same color. Find the odd one out. 60 RP.", responses: ["Challenge accepted!", "Later."] },
+    ],
+    quest: { id: 'echo_secret', desc: 'Find the hidden item in the park', target: 1, reward: 60 }
+  },
+  byte: {
+    name: 'BYTE', color: 0xff00aa, emoji: '🛒',
+    lines: [
+      { text: "Welcome, welcome, WELCOME to Byte's Bargains! Best deals in Neon District!", responses: ["What do you sell?", "Hey Byte!"] },
+      { text: "Furniture, decorations, rare finds — if it glows, I got it. Check the shop!", responses: ["Show me!", "Just browsing."] },
+      { text: "Pro tip: come back every day. I rotate my inventory. Today's deal won't last!", responses: ["Good to know!", "What's today's deal?"] },
+      { text: "Hologram projector — normally 60 RP, today ONLY... 45 RP. You won't find it cheaper!", responses: ["I'll take it!", "Too rich for me."] },
+    ]
+  },
+  mrs_circuit: {
+    name: 'MRS. CIRCUIT', color: 0x7b5cff, emoji: '📚',
+    lines: [
+      { text: "Good day, student! Learning never stops — even in Neon District.", responses: ["Hi Mrs. Circuit!", "Are you a teacher?"] },
+      { text: "Indeed I am. And the best lesson? Kindness compounds. Every tap, every friendship — it adds up.", responses: ["That's beautiful.", "How so?"] },
+      { text: "When you're kind to someone, they're kind to someone else. It's exponential growth!", responses: ["Math AND kindness!", "I'll remember that."] },
+    ]
   }
-  def.icon(c,px,py,tileSize);
+};
+
+// -- FURNITURE DATA --
+const FURNITURE = [
+  { id: 'bed', name: 'Bed', cost: 30, w: 2, h: 1, color: COLORS.purple, desc: 'Cozy neon bed' },
+  { id: 'desk', name: 'Desk', cost: 25, w: 2, h: 1, color: COLORS.cyan, desc: 'Work station' },
+  { id: 'pc', name: 'PC', cost: 40, w: 1, h: 1, color: COLORS.cyan, desc: 'Gaming rig' },
+  { id: 'neon_sign', name: 'Neon Sign', cost: 20, w: 2, h: 1, color: COLORS.magenta, desc: 'Custom glow sign' },
+  { id: 'speaker', name: 'Speaker', cost: 15, w: 1, h: 1, color: COLORS.magenta, desc: 'Bass cannon' },
+  { id: 'plant', name: 'Neon Plant', cost: 10, w: 1, h: 1, color: COLORS.green, desc: 'Bioluminescent' },
+  { id: 'led_strip', name: 'LED Strip', cost: 15, w: 2, h: 1, color: COLORS.cyan, desc: 'RGB vibes' },
+  { id: 'poster', name: 'Poster', cost: 8, w: 1, h: 1, color: COLORS.purple, desc: 'Wall art' },
+  { id: 'hologram', name: 'Hologram', cost: 50, w: 1, h: 2, color: COLORS.cyan, desc: 'Floating display' },
+  { id: 'shelf', name: 'Shelf', cost: 10, w: 2, h: 1, color: COLORS.cyan, desc: 'Display shelf' },
+  { id: 'rug', name: 'Rug', cost: 12, w: 2, h: 2, color: COLORS.purple, desc: 'Soft glow carpet' },
+  { id: 'chair', name: 'Chair', cost: 20, w: 1, h: 1, color: COLORS.purple, desc: 'Gaming throne' },
+  { id: 'lamp', name: 'Lamp', cost: 12, w: 1, h: 1, color: COLORS.cyan, desc: 'Ambient light' },
+  { id: 'crate', name: 'Crate', cost: 5, w: 1, h: 1, color: COLORS.cyan, desc: 'Storage box' },
+  { id: 'disco', name: 'Disco Ball', cost: 35, w: 1, h: 1, color: COLORS.magenta, desc: 'Party time!' },
+  { id: 'arcade', name: 'Arcade Cabinet', cost: 100, w: 1, h: 2, color: COLORS.green, desc: 'Retro gaming' },
+  { id: 'dj_deck', name: 'DJ Deck', cost: 80, w: 2, h: 1, color: COLORS.magenta, desc: 'Drop the beat' },
+  { id: 'telescope', name: 'Telescope', cost: 60, w: 1, h: 1, color: COLORS.yellow, desc: 'Stargazer' },
+];
+
+// -- NPC ROOM LAYOUTS --
+const NPC_ROOMS = {
+  pixel: [
+    { id: 'desk', x: 1, y: 1 }, { id: 'pc', x: 3, y: 1 }, { id: 'poster', x: 5, y: 0 },
+    { id: 'poster', x: 7, y: 0 }, { id: 'neon_sign', x: 8, y: 1 }, { id: 'rug', x: 4, y: 4 },
+    { id: 'plant', x: 0, y: 6 }, { id: 'lamp', x: 10, y: 1 }, { id: 'chair', x: 2, y: 2 },
+  ],
+  nova: [
+    { id: 'desk', x: 0, y: 1 }, { id: 'pc', x: 2, y: 1 }, { id: 'pc', x: 8, y: 1 },
+    { id: 'hologram', x: 5, y: 2 }, { id: 'shelf', x: 0, y: 0 }, { id: 'shelf', x: 6, y: 0 },
+    { id: 'crate', x: 10, y: 6 }, { id: 'crate', x: 10, y: 5 }, { id: 'led_strip', x: 3, y: 0 },
+  ],
+  glitch: [
+    { id: 'dj_deck', x: 4, y: 1 }, { id: 'speaker', x: 0, y: 1 }, { id: 'speaker', x: 10, y: 1 },
+    { id: 'speaker', x: 0, y: 5 }, { id: 'speaker', x: 10, y: 5 }, { id: 'led_strip', x: 2, y: 0 },
+    { id: 'led_strip', x: 7, y: 0 }, { id: 'disco', x: 5, y: 4 }, { id: 'rug', x: 3, y: 5 },
+  ],
+  echo: [
+    { id: 'bed', x: 8, y: 6 }, { id: 'telescope', x: 0, y: 1 }, { id: 'crate', x: 3, y: 3 },
+    { id: 'lamp', x: 10, y: 1 }, { id: 'shelf', x: 4, y: 0 }, { id: 'plant', x: 7, y: 1 },
+  ]
+};
+
+// -- CITY MAP DATA --
+// 0=road, 1=sidewalk, 2=building, 3=park, 4=door, 5=plaza
+function generateCityMap() {
+  const map = Array.from({ length: CITY_H }, () => Array(CITY_W).fill(0));
+  
+  // Fill base with road
+  for (let y = 0; y < CITY_H; y++)
+    for (let x = 0; x < CITY_W; x++)
+      map[y][x] = 0;
+  
+  // Sidewalks along roads
+  for (let y = 0; y < CITY_H; y++)
+    for (let x = 0; x < CITY_W; x++) {
+      if (y % 8 < 2 || x % 10 < 2) map[y][x] = 1; // road grid
+    }
+  
+  // Buildings (solid blocks)
+  const buildings = [
+    // Player apartment
+    { x: 3, y: 3, w: 6, h: 4, id: 'player', name: 'YOUR APT', color: COLORS.yellow, doorX: 6, doorY: 7 },
+    // Pixel's apartment  
+    { x: 13, y: 3, w: 6, h: 4, id: 'pixel', name: "PIXEL'S PAD", color: COLORS.cyan, doorX: 16, doorY: 7 },
+    // Nova's apartment
+    { x: 3, y: 11, w: 6, h: 4, id: 'nova', name: "NOVA'S LAB", color: COLORS.purple, doorX: 6, doorY: 15 },
+    // Glitch's apartment
+    { x: 13, y: 11, w: 6, h: 4, id: 'glitch', name: "GLITCH'S DEN", color: COLORS.green, doorX: 16, doorY: 15 },
+    // Echo's apartment
+    { x: 23, y: 3, w: 6, h: 4, id: 'echo', name: "ECHO'S HIDEOUT", color: COLORS.yellow, doorX: 26, doorY: 7 },
+    // Shop
+    { x: 23, y: 11, w: 6, h: 4, id: 'shop', name: "BYTE'S SHOP", color: COLORS.magenta, doorX: 26, doorY: 15 },
+  ];
+  
+  buildings.forEach(b => {
+    for (let y = b.y; y < b.y + b.h; y++)
+      for (let x = b.x; x < b.x + b.w; x++)
+        map[y][x] = 2;
+    // Door
+    map[b.doorY] = map[b.doorY] || [];
+    map[b.doorY][b.doorX] = 4;
+  });
+  
+  // Park area
+  for (let y = 19; y < 26; y++)
+    for (let x = 3; x < 18; x++)
+      map[y][x] = 3;
+
+  // Plaza
+  for (let y = 19; y < 26; y++)
+    for (let x = 20; x < 35; x++)
+      map[y][x] = 5;
+  
+  return { map, buildings };
 }
 
-// ===== CITY RENDER =====
-function renderCity(t){
-  const camX=player.x-W/2+player.w/2;
-  const camY=player.y-H/2+player.h/2;
+const cityData = generateCityMap();
+
+// ============================================================
+// BOOT SCENE — Preload & Generate Assets
+// ============================================================
+class BootScene extends Phaser.Scene {
+  constructor() { super('Boot'); }
   
-  ctx.fillStyle=COLORS.bg;ctx.fillRect(0,0,W,H);
+  preload() {
+    // We generate all sprites procedurally — no external assets needed for MVP
+    this.load.on('progress', v => {
+      document.getElementById('loadBar').style.width = (v * 100) + '%';
+    });
+  }
   
-  ctx.save();ctx.translate(-camX,-camY);
+  create() {
+    // Generate sprite textures
+    this.generatePlayerSprite();
+    this.generateNPCSprites();
+    this.generateTileTextures();
+    this.generateFurnitureSprites();
+    this.generateUIElements();
+    
+    // Hide loading screen
+    document.getElementById('loading').classList.add('hidden');
+    
+    // Start title
+    this.scene.start('Title');
+  }
   
-  // ground
-  for(let y=0;y<CITY_H;y++)for(let x=0;x<CITY_W;x++){
-    const px=x*T,py=y*T;
-    const tile=cityMap[y][x];
-    if(tile===0){
-      ctx.fillStyle='#0d0d18';ctx.fillRect(px,py,T,T);
-      ctx.strokeStyle='rgba(0,240,255,.06)';ctx.lineWidth=.5;ctx.strokeRect(px,py,T,T);
-      // road lines
-      if(y%2===0){ctx.fillStyle='rgba(0,240,255,.12)';ctx.fillRect(px+T*.4,py+T*.45,T*.2,T*.1)}
-    }else if(tile===3){
-      ctx.fillStyle='#111122';ctx.fillRect(px,py,T,T);
-      ctx.strokeStyle='rgba(168,85,247,.08)';ctx.lineWidth=.5;ctx.strokeRect(px,py,T,T);
-    }else if(tile===9){
-      ctx.fillStyle='#0a1a0a';ctx.fillRect(px,py,T,T);
-      const pulse=Math.sin(t/500+x+y)*.3+.7;
-      ctx.fillStyle=`rgba(0,255,136,${.05*pulse})`;ctx.fillRect(px+2,py+2,T-4,T-4);
-      // mini trees
-      if((x+y)%3===0){
-        ctx.fillStyle='rgba(0,255,136,.3)';
-        ctx.beginPath();ctx.arc(px+T/2,py+T/2,T*.3,0,Math.PI*2);ctx.fill();
+  generatePlayerSprite() {
+    const g = this.add.graphics();
+    // 4 directions × 2 frames = 8 frames, each 32×32
+    const dirs = [
+      { name: 'down', body: true },
+      { name: 'up', body: true },
+      { name: 'left', body: true },
+      { name: 'right', body: true }
+    ];
+    
+    dirs.forEach((dir, di) => {
+      for (let frame = 0; frame < 2; frame++) {
+        g.clear();
+        const ox = (di * 2 + frame) * TILE;
+        const wobble = frame === 1 ? 1 : 0;
+        
+        // Body
+        g.fillStyle(Save.data.avatar.outfit);
+        g.fillRect(ox + 8, 14 + wobble, 16, 12);
+        
+        // Head
+        g.fillStyle(Save.data.avatar.skin);
+        g.fillRect(ox + 9, 4 + wobble, 14, 12);
+        
+        // Eyes
+        g.fillStyle(0x0a0a0f);
+        if (dir.name === 'up') {
+          // No eyes from behind
+        } else if (dir.name === 'left') {
+          g.fillRect(ox + 10, 8 + wobble, 3, 3);
+        } else if (dir.name === 'right') {
+          g.fillRect(ox + 19, 8 + wobble, 3, 3);
+        } else {
+          g.fillRect(ox + 12, 8 + wobble, 3, 3);
+          g.fillRect(ox + 18, 8 + wobble, 3, 3);
+        }
+        
+        // Legs
+        g.fillStyle(0x1a1a2e);
+        const legOff = frame === 1 ? 2 : 0;
+        g.fillRect(ox + 10, 26, 5, 6 - legOff);
+        g.fillRect(ox + 17, 26, 5, 6 - (frame === 0 ? 2 : 0));
       }
-    }
+    });
+    
+    g.generateTexture('player', TILE * 8, TILE);
+    g.destroy();
   }
   
-  // buildings
-  buildings.forEach(b=>{
-    const px=b.x*T,py=b.y*T,bw=b.w*T,bh=b.h*T;
-    ctx.fillStyle='#0d0d1a';ctx.fillRect(px,py,bw,bh);
-    ctx.shadowColor=b.color;ctx.shadowBlur=20;
-    ctx.strokeStyle=b.color;ctx.lineWidth=2;ctx.strokeRect(px,py,bw,bh);
-    ctx.shadowBlur=0;
-    // name
-    ctx.fillStyle=b.color;ctx.font='bold 9px Orbitron';ctx.textAlign='center';
-    ctx.fillText(b.name,px+bw/2,py-6);
-    // windows
-    const pulse=Math.sin(t/800)*.3+.7;
-    for(let wy=1;wy<b.h-1;wy++)for(let wx=1;wx<b.w-1;wx++){
-      if((wx+wy)%2===0){
-        ctx.fillStyle=`rgba(${hexToRgb(b.color)},${.15*pulse})`;
-        ctx.fillRect(px+wx*T+4,py+wy*T+4,T-8,T-8);
+  generateNPCSprites() {
+    const npcs = [
+      { key: 'npc_pixel', skin: 0x00f0ff, outfit: 0xff6b9d },
+      { key: 'npc_nova', skin: 0xa855f7, outfit: 0x2a2a4e },
+      { key: 'npc_glitch', skin: 0x00ff88, outfit: 0x1a3a1a },
+      { key: 'npc_echo', skin: 0xffe600, outfit: 0x3a3a1a },
+      { key: 'npc_byte', skin: 0xff00aa, outfit: 0x2a1a2e },
+      { key: 'npc_circuit', skin: 0x7b5cff, outfit: 0x1a1a3a },
+    ];
+    
+    npcs.forEach(npc => {
+      const g = this.add.graphics();
+      for (let frame = 0; frame < 2; frame++) {
+        g.clear();
+        const ox = frame * TILE;
+        const wobble = frame === 1 ? 1 : 0;
+        
+        g.fillStyle(npc.outfit);
+        g.fillRect(ox + 8, 14 + wobble, 16, 12);
+        g.fillStyle(npc.skin);
+        g.fillRect(ox + 9, 4 + wobble, 14, 12);
+        g.fillStyle(0x0a0a0f);
+        g.fillRect(ox + 12, 8 + wobble, 3, 3);
+        g.fillRect(ox + 18, 8 + wobble, 3, 3);
+        g.fillStyle(0x1a1a2e);
+        g.fillRect(ox + 10, 26, 5, 6);
+        g.fillRect(ox + 17, 26, 5, 6);
       }
-    }
-    // door
-    const dx=b.door.x*T,dy=b.door.y*T;
-    const doorPulse=Math.sin(t/400)*.5+.5;
-    ctx.fillStyle=`rgba(${hexToRgb(b.color)},${.2+doorPulse*.15})`;
-    ctx.fillRect(dx+4,dy+4,T-8,T-8);
-    ctx.strokeStyle=b.color;ctx.lineWidth=1;ctx.strokeRect(dx+4,dy+4,T-8,T-8);
-    ctx.fillStyle=b.color;ctx.font='8px Share Tech Mono';ctx.textAlign='center';
-    ctx.fillText('ENTER',dx+T/2,dy+T/2+3);
-  });
-  
-  // player
-  drawPlayer(player.x,player.y,t);
-  
-  ctx.restore();
-  
-  // check proximity to doors
-  promptText='';
-  buildings.forEach(b=>{
-    const dx=b.door.x*T,dy=b.door.y*T;
-    const dist=Math.hypot(player.x-dx,player.y-dy);
-    if(dist<T*1.5){
-      promptText=`Press E to enter ${b.name}`;
-    }
-  });
-}
-
-// ===== APARTMENT RENDER =====
-function renderApartment(t){
-  const apt=buildings[currentApt];
-  const ox=(W-APT_W*T)/2, oy=60+(H-60-APT_H*T)/2;
-  
-  ctx.fillStyle=COLORS.bg;ctx.fillRect(0,0,W,H);
-  
-  // floor
-  for(let y=0;y<APT_H;y++)for(let x=0;x<APT_W;x++){
-    const px=ox+x*T,py=oy+y*T;
-    ctx.fillStyle=(x+y)%2===0?'#0e0e1a':'#111125';
-    ctx.fillRect(px,py,T,T);
-    ctx.strokeStyle='rgba(168,85,247,.08)';ctx.lineWidth=.5;ctx.strokeRect(px,py,T,T);
+      g.generateTexture(npc.key, TILE * 2, TILE);
+      g.destroy();
+    });
   }
   
-  // walls
-  ctx.shadowColor=apt.color;ctx.shadowBlur=25;
-  ctx.strokeStyle=apt.color;ctx.lineWidth=3;
-  ctx.strokeRect(ox,oy,APT_W*T,APT_H*T);
-  ctx.shadowBlur=0;
-  
-  // room name
-  ctx.fillStyle=apt.color;ctx.font='bold 14px Orbitron';ctx.textAlign='center';
-  ctx.fillText(apt.name,W/2,oy-12);
-  
-  // furniture
-  apt.furniture.forEach(f=>drawFurniture(ctx,f,ox,oy,T,true));
-  
-  // NPC
-  if(apt.npc){
-    const npcX=ox+5*T, npcY=oy+4*T;
-    drawNPC(npcX,npcY,apt.color,apt.npc,apt.msg,t);
+  generateTileTextures() {
+    // Road tile
+    let g = this.add.graphics();
+    g.fillStyle(0x080810);
+    g.fillRect(0, 0, TILE, TILE);
+    g.lineStyle(1, 0x111126, 0.3);
+    g.strokeRect(0, 0, TILE, TILE);
+    // Road line
+    g.fillStyle(0xffe600, 0.15);
+    g.fillRect(14, 0, 4, TILE);
+    g.generateTexture('tile_road', TILE, TILE);
+    g.destroy();
+    
+    // Sidewalk
+    g = this.add.graphics();
+    g.fillStyle(0x0d0d18);
+    g.fillRect(0, 0, TILE, TILE);
+    g.lineStyle(1, 0x00f0ff, 0.06);
+    g.strokeRect(0, 0, TILE, TILE);
+    g.generateTexture('tile_sidewalk', TILE, TILE);
+    g.destroy();
+    
+    // Building wall
+    g = this.add.graphics();
+    g.fillStyle(0x0a0a1a);
+    g.fillRect(0, 0, TILE, TILE);
+    g.lineStyle(1, 0x00f0ff, 0.12);
+    g.strokeRect(0, 0, TILE, TILE);
+    // Window
+    g.fillStyle(0x00f0ff, 0.15);
+    g.fillRect(10, 8, 12, 10);
+    g.generateTexture('tile_building', TILE, TILE);
+    g.destroy();
+    
+    // Door
+    g = this.add.graphics();
+    g.fillStyle(0x0d0d18);
+    g.fillRect(0, 0, TILE, TILE);
+    g.lineStyle(2, 0x00f0ff, 0.6);
+    g.strokeRect(6, 2, 20, 28);
+    g.fillStyle(0x00f0ff, 0.2);
+    g.fillRect(8, 4, 16, 24);
+    // Arrow indicator
+    g.fillStyle(0x00f0ff, 0.8);
+    g.fillTriangle(16, 0, 12, 6, 20, 6);
+    g.generateTexture('tile_door', TILE, TILE);
+    g.destroy();
+    
+    // Park grass
+    g = this.add.graphics();
+    g.fillStyle(0x0a1a0f);
+    g.fillRect(0, 0, TILE, TILE);
+    g.lineStyle(1, 0x00ff88, 0.05);
+    g.strokeRect(0, 0, TILE, TILE);
+    g.generateTexture('tile_park', TILE, TILE);
+    g.destroy();
+    
+    // Plaza
+    g = this.add.graphics();
+    g.fillStyle(0x0d0d1a);
+    g.fillRect(0, 0, TILE, TILE);
+    g.lineStyle(1, 0xff00aa, 0.06);
+    g.strokeRect(0, 0, TILE, TILE);
+    g.generateTexture('tile_plaza', TILE, TILE);
+    g.destroy();
+    
+    // Neon tree
+    g = this.add.graphics();
+    g.fillStyle(0x00ff88, 0.3);
+    g.fillCircle(16, 10, 10);
+    g.fillStyle(0x1a3a1a);
+    g.fillRect(14, 18, 4, 14);
+    g.generateTexture('tree', TILE, TILE);
+    g.destroy();
+    
+    // Room floor
+    g = this.add.graphics();
+    g.fillStyle(0x0a0a14);
+    g.fillRect(0, 0, TILE, TILE);
+    g.lineStyle(1, 0x00f0ff, 0.04);
+    g.strokeRect(0, 0, TILE, TILE);
+    g.generateTexture('tile_floor', TILE, TILE);
+    g.destroy();
+    
+    // Room wall
+    g = this.add.graphics();
+    g.fillStyle(0x0d0d20);
+    g.fillRect(0, 0, TILE, TILE);
+    g.lineStyle(1, 0x00f0ff, 0.08);
+    g.strokeRect(0, 0, TILE, TILE);
+    g.generateTexture('tile_wall', TILE, TILE);
+    g.destroy();
   }
   
-  // player in room
-  const rpx=ox+player.x*T, rpy=oy+player.y*T;
-  drawPlayer(rpx,rpy,t);
-  
-  // placing item preview
-  if(placingItem){
-    const def=FURNITURE[placingItem];
-    const mx=mouseGrid.x, my=mouseGrid.y;
-    if(mx>=0&&mx<APT_W&&my>=0&&my<APT_H){
-      ctx.globalAlpha=.5;
-      drawFurniture(ctx,{t:placingItem,x:mx,y:my},ox,oy,T,true);
-      ctx.globalAlpha=1;
-    }
-  }
-  
-  promptText = placingItem ? 'Click to place item (Right-click/Esc to cancel)' : 'Press ESC to exit apartment';
-}
-
-// ===== MINIMAP =====
-function renderMinimap(){
-  const mw=MC.width,mh=MC.height;
-  const ts=mw/CITY_W;
-  mctx.fillStyle='rgba(10,10,15,.9)';mctx.fillRect(0,0,mw,mh);
-  
-  buildings.forEach(b=>{
-    mctx.fillStyle=b.color;
-    mctx.globalAlpha=.5;
-    mctx.fillRect(b.x*ts,b.y*ts,b.w*ts,b.h*ts);
-  });
-  mctx.globalAlpha=1;
-  
-  // player dot
-  const px=(player.x/T)*ts, py=(player.y/T)*ts;
-  mctx.fillStyle='#fff';
-  mctx.fillRect(px-1,py-1,3,3);
-}
-
-// ===== INVENTORY UI =====
-function buildInventory(){
-  const list=document.getElementById('inv-list');
-  list.innerHTML='';
-  Object.entries(FURNITURE).forEach(([key,f])=>{
-    const div=document.createElement('div');
-    div.className='inv-item';
-    const preview=document.createElement('canvas');
-    preview.width=32;preview.height=32;
-    const pc=preview.getContext('2d');
-    f.icon(pc,0,0,32);
-    div.appendChild(preview);
-    const name=document.createElement('span');name.className='inv-name';name.textContent=f.name;
-    const cost=document.createElement('span');cost.className='inv-cost';cost.textContent=f.cost+' RP';
-    div.appendChild(name);div.appendChild(cost);
-    div.onclick=()=>{
-      if(scene!=='apartment'||currentApt!==3){showToast('Enter YOUR apartment first!');return}
-      if(rp<f.cost){showToast('Not enough RP!');return}
-      placingItem=key;
-      showToast('Click to place '+f.name);
-    };
-    list.appendChild(div);
-  });
-}
-buildInventory();
-
-// ===== UPDATE =====
-let mouseGrid={x:-1,y:-1};
-
-function update(dt){
-  let dx=0,dy=0;
-  if(keys['ArrowLeft']||keys['KeyA']||keys['left'])dx=-1;
-  if(keys['ArrowRight']||keys['KeyD']||keys['right'])dx=1;
-  if(keys['ArrowUp']||keys['KeyW']||keys['up'])dy=-1;
-  if(keys['ArrowDown']||keys['KeyS']||keys['down'])dy=1;
-  
-  if(scene==='city'){
-    const nx=player.x+dx*player.spd;
-    const ny=player.y+dy*player.spd;
-    const tileX=Math.floor((nx+player.w/2)/T);
-    const tileY=Math.floor((ny+player.h/2)/T);
-    if(tileX>=0&&tileX<CITY_W&&tileY>=0&&tileY<CITY_H){
-      const tile=cityMap[tileY][tileX];
-      if(tile!==1){player.x=nx;player.y=ny}
-    }
-    // clamp
-    player.x=Math.max(0,Math.min(player.x,(CITY_W-1)*T));
-    player.y=Math.max(0,Math.min(player.y,(CITY_H-1)*T));
-  }else{
-    // apartment movement
-    const nx=player.x+dx*0.08;
-    const ny=player.y+dy*0.08;
-    if(nx>=0&&nx<APT_W-1)player.x=nx;
-    if(ny>=0&&ny<APT_H-1)player.y=ny;
-  }
-}
-
-// ===== INTERACT =====
-function interact(){
-  if(scene==='city'){
-    buildings.forEach((b,i)=>{
-      const dx=b.door.x*T,dy=b.door.y*T;
-      const dist=Math.hypot(player.x-dx,player.y-dy);
-      if(dist<T*1.5){
-        enterApartment(i);
+  generateFurnitureSprites() {
+    FURNITURE.forEach(f => {
+      const g = this.add.graphics();
+      const w = f.w * TILE;
+      const h = f.h * TILE;
+      
+      // Base shape
+      g.fillStyle(0x0a0a1a);
+      g.fillRect(0, 0, w, h);
+      g.lineStyle(2, f.color, 0.7);
+      g.strokeRect(1, 1, w - 2, h - 2);
+      
+      // Inner detail varies by item
+      g.fillStyle(f.color, 0.15);
+      g.fillRect(3, 3, w - 6, h - 6);
+      
+      // Icon letter
+      g.fillStyle(f.color, 0.6);
+      // Simple icon based on type
+      const cx = w / 2, cy = h / 2;
+      switch(f.id) {
+        case 'pc':
+          g.fillRect(6, 4, 20, 16); // screen
+          g.fillStyle(f.color, 0.3);
+          g.fillRect(12, 22, 8, 4); // stand
+          break;
+        case 'speaker':
+          g.fillStyle(f.color, 0.3);
+          g.fillCircle(cx, cy - 2, 8);
+          g.fillCircle(cx, cy + 8, 5);
+          break;
+        case 'plant':
+          g.fillStyle(0x00ff88, 0.4);
+          g.fillCircle(cx, 8, 10);
+          g.fillStyle(0x1a1a2e);
+          g.fillRect(12, 20, 8, 10);
+          break;
+        case 'hologram':
+          g.fillStyle(f.color, 0.2);
+          g.fillTriangle(cx, 4, 4, h - 8, w - 4, h - 8);
+          break;
+        case 'disco':
+          g.fillStyle(f.color, 0.4);
+          g.fillCircle(cx, cy, 12);
+          g.fillStyle(0xffffff, 0.2);
+          g.fillCircle(cx - 4, cy - 4, 3);
+          break;
+        case 'lamp':
+          g.fillStyle(f.color, 0.4);
+          g.fillTriangle(cx, 2, cx - 8, 14, cx + 8, 14);
+          g.fillStyle(0x333333);
+          g.fillRect(cx - 2, 14, 4, 16);
+          break;
+        default:
+          g.fillStyle(f.color, 0.2);
+          g.fillRect(4, 4, w - 8, h - 8);
       }
+      
+      g.generateTexture('furn_' + f.id, w, h);
+      g.destroy();
+    });
+  }
+  
+  generateUIElements() {
+    // Interaction prompt
+    const g = this.add.graphics();
+    g.fillStyle(0x0a0a0f, 0.85);
+    g.fillRoundedRect(0, 0, 160, 32, 4);
+    g.lineStyle(1, 0x00f0ff, 0.5);
+    g.strokeRoundedRect(0, 0, 160, 32, 4);
+    g.generateTexture('ui_prompt', 160, 32);
+    g.destroy();
+  }
+}
+
+// ============================================================
+// TITLE SCENE
+// ============================================================
+class TitleScene extends Phaser.Scene {
+  constructor() { super('Title'); }
+  
+  create() {
+    const cx = this.cameras.main.centerX;
+    const cy = this.cameras.main.centerY;
+    
+    // Background
+    this.cameras.main.setBackgroundColor(0x0a0a0f);
+    
+    // Animated grid
+    for (let i = 0; i < 20; i++) {
+      const line = this.add.rectangle(cx, i * 40, 800, 1, COLORS.cyan, 0.03);
+      this.tweens.add({ targets: line, alpha: { from: 0.01, to: 0.06 }, duration: 2000, yoyo: true, repeat: -1, delay: i * 100 });
+    }
+    
+    // CF Logo
+    const cText = this.add.text(cx - 40, cy - 120, 'C', {
+      fontFamily: 'Orbitron', fontSize: '80px', fontStyle: 'bold', color: '#00f0ff'
+    }).setOrigin(0.5).setShadow(0, 0, '#00f0ff', 10);
+    
+    const fText = this.add.text(cx + 10, cy - 120, 'F', {
+      fontFamily: 'Orbitron', fontSize: '80px', fontStyle: 'bold', color: '#ff00aa'
+    }).setOrigin(0.5).setShadow(0, 0, '#ff00aa', 10);
+    
+    // Title
+    this.add.text(cx, cy - 40, 'CYBR FRNDZ', {
+      fontFamily: 'Orbitron', fontSize: '36px', fontStyle: 'bold', color: '#ffffff'
+    }).setOrigin(0.5).setShadow(0, 0, '#00f0ff', 8);
+    
+    // Subtitle
+    this.add.text(cx, cy + 10, 'EARN RESPECT. BUILD YOUR WORLD.', {
+      fontFamily: 'Share Tech Mono', fontSize: '14px', color: '#8888aa'
+    }).setOrigin(0.5);
+    
+    // Start prompt
+    const start = this.add.text(cx, cy + 80, '[ TAP TO START ]', {
+      fontFamily: 'Orbitron', fontSize: '16px', color: '#00f0ff'
+    }).setOrigin(0.5);
+    
+    this.tweens.add({ targets: start, alpha: { from: 1, to: 0.3 }, duration: 800, yoyo: true, repeat: -1 });
+    
+    // Version
+    this.add.text(cx, cy + 160, 'v0.1 — EARLY ACCESS', {
+      fontFamily: 'Share Tech Mono', fontSize: '10px', color: '#444466'
+    }).setOrigin(0.5);
+    
+    // Click/tap to start
+    this.input.once('pointerdown', () => {
+      this.cameras.main.fadeOut(500, 10, 10, 15);
+      this.time.delayedCall(500, () => this.scene.start('City'));
+    });
+    
+    // Keyboard
+    this.input.keyboard.once('keydown', () => {
+      this.cameras.main.fadeOut(500, 10, 10, 15);
+      this.time.delayedCall(500, () => this.scene.start('City'));
     });
   }
 }
 
-function enterApartment(i){
-  scene='apartment';
-  currentApt=i;
-  player.x=4;player.y=6;
-  document.getElementById('h-loc').textContent=buildings[i].name;
-  showToast('Entered '+buildings[i].name);
+// ============================================================
+// CITY SCENE — Overworld
+// ============================================================
+class CityScene extends Phaser.Scene {
+  constructor() { super('City'); }
+  
+  create() {
+    this.cameras.main.fadeIn(500);
+    this.cameras.main.setBackgroundColor(0x0a0a0f);
+    
+    const { map, buildings } = cityData;
+    
+    // Render tilemap
+    this.tileSprites = this.add.group();
+    const tileKeys = ['tile_road', 'tile_sidewalk', 'tile_building', 'tile_park', 'tile_door', 'tile_plaza'];
+    
+    for (let y = 0; y < CITY_H; y++) {
+      for (let x = 0; x < CITY_W; x++) {
+        const tileType = map[y][x];
+        const key = tileKeys[tileType] || 'tile_road';
+        this.add.image(x * TILE + TILE/2, y * TILE + TILE/2, key);
+      }
+    }
+    
+    // Building labels
+    buildings.forEach(b => {
+      // Neon outline around building
+      const rect = this.add.rectangle(
+        b.x * TILE + (b.w * TILE) / 2,
+        b.y * TILE + (b.h * TILE) / 2,
+        b.w * TILE, b.h * TILE
+      );
+      rect.setStrokeStyle(2, b.color, 0.5);
+      rect.setFillStyle(0, 0);
+      
+      // Pulsing glow
+      this.tweens.add({
+        targets: rect, 
+        strokeAlpha: { from: 0.3, to: 0.8 },
+        duration: 2000, yoyo: true, repeat: -1
+      });
+      
+      // Label
+      this.add.text(
+        b.x * TILE + (b.w * TILE) / 2,
+        b.y * TILE - 8,
+        b.name,
+        { fontFamily: 'Share Tech Mono', fontSize: '9px', color: '#' + b.color.toString(16).padStart(6, '0') }
+      ).setOrigin(0.5).setShadow(0, 0, '#' + b.color.toString(16).padStart(6, '0'), 4);
+    });
+    
+    // Park trees
+    for (let i = 0; i < 12; i++) {
+      const tx = (5 + Math.floor(Math.random() * 11)) * TILE + TILE/2;
+      const ty = (20 + Math.floor(Math.random() * 5)) * TILE + TILE/2;
+      const tree = this.add.image(tx, ty, 'tree');
+      this.tweens.add({
+        targets: tree, alpha: { from: 0.6, to: 1 },
+        duration: 1500 + Math.random() * 1000, yoyo: true, repeat: -1
+      });
+    }
+    
+    // NPC sprites in the world
+    this.npcs = [];
+    const npcPositions = [
+      { key: 'pixel', x: 10, y: 8, spriteKey: 'npc_pixel' },
+      { key: 'nova', x: 7, y: 16, spriteKey: 'npc_nova' },
+      { key: 'glitch', x: 17, y: 16, spriteKey: 'npc_glitch' },
+      { key: 'echo', x: 27, y: 8, spriteKey: 'npc_echo' },
+      { key: 'byte', x: 27, y: 16, spriteKey: 'npc_byte' },
+      { key: 'mrs_circuit', x: 25, y: 22, spriteKey: 'npc_circuit' },
+    ];
+    
+    npcPositions.forEach(n => {
+      const sprite = this.add.sprite(n.x * TILE + TILE/2, n.y * TILE + TILE/2, n.spriteKey, 0);
+      sprite.npcKey = n.key;
+      
+      // Idle animation (wobble)
+      this.tweens.add({
+        targets: sprite, y: sprite.y - 2,
+        duration: 1000 + Math.random() * 500, yoyo: true, repeat: -1
+      });
+      
+      // Name tag
+      const color = DIALOGUES[n.key]?.color || 0x00f0ff;
+      this.add.text(n.x * TILE + TILE/2, n.y * TILE - 8, 
+        DIALOGUES[n.key]?.emoji + ' ' + (DIALOGUES[n.key]?.name || n.key),
+        { fontFamily: 'Share Tech Mono', fontSize: '8px', color: '#' + color.toString(16).padStart(6, '0') }
+      ).setOrigin(0.5);
+      
+      this.npcs.push({ sprite, key: n.key, x: n.x, y: n.y });
+    });
+    
+    // Player
+    this.playerX = 7;
+    this.playerY = 8;
+    this.player = this.add.sprite(
+      this.playerX * TILE + TILE/2,
+      this.playerY * TILE + TILE/2,
+      'player', 0
+    );
+    this.player.setDepth(10);
+    this.playerDir = 0; // 0=down,1=up,2=left,3=right
+    this.playerFrame = 0;
+    this.walkTimer = 0;
+    this.isMoving = false;
+    
+    // Camera
+    this.cameras.main.startFollow(this.player, true, 0.08, 0.08);
+    this.cameras.main.setZoom(2);
+    
+    // Controls
+    this.cursors = this.input.keyboard.createCursorKeys();
+    this.wasd = this.input.keyboard.addKeys('W,A,S,D');
+    this.interactKey = this.input.keyboard.addKey('E');
+    
+    // HUD (fixed to camera)
+    this.createHUD();
+    
+    // Interaction prompt
+    this.promptText = this.add.text(0, 0, '', {
+      fontFamily: 'Share Tech Mono', fontSize: '8px', color: '#00f0ff'
+    }).setOrigin(0.5).setDepth(20).setVisible(false);
+    
+    // Dialogue state
+    this.dialogueActive = false;
+    this.dialogueBox = null;
+    
+    // Touch controls for mobile
+    this.createMobileControls();
+    
+    // Movement input state for mobile
+    this.mobileDir = { x: 0, y: 0 };
+  }
+  
+  createHUD() {
+    const cam = this.cameras.main;
+    
+    // RP display
+    this.rpText = this.add.text(10, 10, '', {
+      fontFamily: 'Orbitron', fontSize: '10px', color: '#00f0ff'
+    }).setScrollFactor(0).setDepth(100);
+    
+    // Location
+    this.locText = this.add.text(10, 24, '📍 NEON DISTRICT', {
+      fontFamily: 'Share Tech Mono', fontSize: '8px', color: '#8888aa'
+    }).setScrollFactor(0).setDepth(100);
+    
+    this.updateHUD();
+  }
+  
+  createMobileControls() {
+    if (!this.sys.game.device.input.touch) return;
+    
+    const w = this.cameras.main.width;
+    const h = this.cameras.main.height;
+    const padX = 60;
+    const padY = h - 60;
+    const btnSize = 36;
+    
+    const dirs = [
+      { x: 0, y: -btnSize, label: '▲', dx: 0, dy: -1 },
+      { x: 0, y: btnSize, label: '▼', dx: 0, dy: 1 },
+      { x: -btnSize, y: 0, label: '◄', dx: -1, dy: 0 },
+      { x: btnSize, y: 0, label: '►', dx: 1, dy: 0 },
+    ];
+    
+    dirs.forEach(d => {
+      const btn = this.add.text(padX + d.x, padY + d.y, d.label, {
+        fontFamily: 'Orbitron', fontSize: '20px', color: '#00f0ff', backgroundColor: '#0a0a0f88',
+        padding: { x: 8, y: 4 }
+      }).setOrigin(0.5).setScrollFactor(0).setDepth(100).setInteractive().setAlpha(0.6);
+      
+      btn.on('pointerdown', () => { this.mobileDir = { x: d.dx, y: d.dy }; btn.setAlpha(1); });
+      btn.on('pointerup', () => { this.mobileDir = { x: 0, y: 0 }; btn.setAlpha(0.6); });
+      btn.on('pointerout', () => { this.mobileDir = { x: 0, y: 0 }; btn.setAlpha(0.6); });
+    });
+    
+    // Interact button
+    const eBtn = this.add.text(w - 50, h - 60, 'E', {
+      fontFamily: 'Orbitron', fontSize: '18px', color: '#ff00aa', backgroundColor: '#0a0a0f88',
+      padding: { x: 12, y: 8 }
+    }).setOrigin(0.5).setScrollFactor(0).setDepth(100).setInteractive().setAlpha(0.6);
+    
+    eBtn.on('pointerdown', () => { this.handleInteraction(); eBtn.setAlpha(1); });
+    eBtn.on('pointerup', () => eBtn.setAlpha(0.6));
+  }
+  
+  updateHUD() {
+    this.rpText.setText('⚡ ' + Save.data.rp + ' RP');
+  }
+  
+  update(time, delta) {
+    if (this.dialogueActive) return;
+    
+    // Movement
+    this.walkTimer += delta;
+    const moveDelay = 150; // ms per tile
+    
+    if (this.walkTimer >= moveDelay) {
+      let dx = 0, dy = 0;
+      
+      if (this.cursors.left.isDown || this.wasd.A.isDown || this.mobileDir.x < 0) { dx = -1; this.playerDir = 2; }
+      else if (this.cursors.right.isDown || this.wasd.D.isDown || this.mobileDir.x > 0) { dx = 1; this.playerDir = 3; }
+      else if (this.cursors.up.isDown || this.wasd.W.isDown || this.mobileDir.y < 0) { dy = -1; this.playerDir = 1; }
+      else if (this.cursors.down.isDown || this.wasd.S.isDown || this.mobileDir.y > 0) { dy = 1; this.playerDir = 0; }
+      
+      if (dx !== 0 || dy !== 0) {
+        const nx = this.playerX + dx;
+        const ny = this.playerY + dy;
+        
+        // Bounds check
+        if (nx >= 0 && nx < CITY_W && ny >= 0 && ny < CITY_H) {
+          const tile = cityData.map[ny][nx];
+          // Can walk on road(0), sidewalk(1), door(4), park(3), plaza(5)
+          if (tile !== 2) {
+            this.playerX = nx;
+            this.playerY = ny;
+            
+            // Animate walk
+            this.playerFrame = (this.playerFrame + 1) % 2;
+            this.player.setFrame(this.playerDir * 2 + this.playerFrame);
+            
+            // Smooth movement
+            this.tweens.add({
+              targets: this.player,
+              x: nx * TILE + TILE/2,
+              y: ny * TILE + TILE/2,
+              duration: moveDelay - 10,
+              ease: 'Linear'
+            });
+          }
+        }
+        this.walkTimer = 0;
+      }
+    }
+    
+    // Check for nearby interactions
+    this.checkInteractions();
+    
+    // E key interaction
+    if (Phaser.Input.Keyboard.JustDown(this.interactKey)) {
+      this.handleInteraction();
+    }
+  }
+  
+  checkInteractions() {
+    let nearDoor = null;
+    let nearNPC = null;
+    
+    // Check doors
+    cityData.buildings.forEach(b => {
+      if (Math.abs(this.playerX - b.doorX) <= 1 && Math.abs(this.playerY - b.doorY) <= 1) {
+        nearDoor = b;
+      }
+    });
+    
+    // Check NPCs
+    this.npcs.forEach(n => {
+      if (Math.abs(this.playerX - n.x) <= 1 && Math.abs(this.playerY - n.y) <= 1) {
+        nearNPC = n;
+      }
+    });
+    
+    this.nearDoor = nearDoor;
+    this.nearNPC = nearNPC;
+    
+    if (nearDoor) {
+      this.promptText.setVisible(true);
+      this.promptText.setText('[E] Enter ' + nearDoor.name);
+      this.promptText.setPosition(this.player.x, this.player.y - 24);
+    } else if (nearNPC) {
+      this.promptText.setVisible(true);
+      this.promptText.setText('[E] Talk to ' + (DIALOGUES[nearNPC.key]?.name || nearNPC.key));
+      this.promptText.setPosition(this.player.x, this.player.y - 24);
+    } else {
+      this.promptText.setVisible(false);
+    }
+  }
+  
+  handleInteraction() {
+    if (this.nearDoor) {
+      const b = this.nearDoor;
+      this.cameras.main.fadeOut(300, 10, 10, 15);
+      this.time.delayedCall(300, () => {
+        this.scene.start('Apartment', { 
+          buildingId: b.id, 
+          name: b.name, 
+          color: b.color,
+          isPlayer: b.id === 'player',
+          npcRoom: NPC_ROOMS[b.id] || null
+        });
+      });
+    } else if (this.nearNPC && !this.dialogueActive) {
+      this.startDialogue(this.nearNPC.key);
+    }
+  }
+  
+  startDialogue(npcKey) {
+    const dlg = DIALOGUES[npcKey];
+    if (!dlg) return;
+    
+    this.dialogueActive = true;
+    this.dialogueIndex = 0;
+    
+    // Create dialogue box
+    const cam = this.cameras.main;
+    const boxW = cam.width / cam.zoom - 20;
+    const boxH = 70;
+    const boxX = this.player.x;
+    const boxY = this.player.y + 40;
+    
+    this.dlgBg = this.add.rectangle(boxX, boxY, boxW, boxH, 0x0a0a0f, 0.92)
+      .setStrokeStyle(1, dlg.color, 0.6).setDepth(50);
+    
+    this.dlgName = this.add.text(boxX - boxW/2 + 8, boxY - boxH/2 + 6, 
+      dlg.emoji + ' ' + dlg.name, {
+      fontFamily: 'Orbitron', fontSize: '8px', 
+      color: '#' + dlg.color.toString(16).padStart(6, '0')
+    }).setDepth(51);
+    
+    this.dlgText = this.add.text(boxX - boxW/2 + 8, boxY - boxH/2 + 20, 
+      dlg.lines[0].text, {
+      fontFamily: 'Share Tech Mono', fontSize: '8px', color: '#e0e0f0',
+      wordWrap: { width: boxW - 16 }
+    }).setDepth(51);
+    
+    this.dlgContinue = this.add.text(boxX, boxY + boxH/2 - 10, 
+      '[TAP / E TO CONTINUE]', {
+      fontFamily: 'Share Tech Mono', fontSize: '6px', color: '#8888aa'
+    }).setOrigin(0.5).setDepth(51);
+    
+    this.tweens.add({ targets: this.dlgContinue, alpha: { from: 1, to: 0.4 }, duration: 600, yoyo: true, repeat: -1 });
+    
+    this.currentDialogue = dlg;
+    
+    // Advance on click/key
+    const advance = () => {
+      this.dialogueIndex++;
+      if (this.dialogueIndex >= dlg.lines.length) {
+        this.endDialogue(npcKey);
+      } else {
+        this.dlgText.setText(dlg.lines[this.dialogueIndex].text);
+      }
+    };
+    
+    this.input.once('pointerdown', advance);
+    this.interactKey.once('down', advance);
+    
+    // Re-bind for subsequent advances
+    const bindNext = () => {
+      if (!this.dialogueActive) return;
+      this.input.once('pointerdown', () => { advance(); bindNext(); });
+      this.interactKey.once('down', () => { advance(); bindNext(); });
+    };
+    bindNext();
+  }
+  
+  endDialogue(npcKey) {
+    this.dialogueActive = false;
+    if (this.dlgBg) this.dlgBg.destroy();
+    if (this.dlgName) this.dlgName.destroy();
+    if (this.dlgText) this.dlgText.destroy();
+    if (this.dlgContinue) this.dlgContinue.destroy();
+    
+    // Quest reward on last dialogue
+    const dlg = DIALOGUES[npcKey];
+    if (dlg?.quest && !Save.data.quests[dlg.quest.id]) {
+      Save.data.quests[dlg.quest.id] = { accepted: true, progress: 0 };
+      Save.save();
+    }
+    
+    // Track visited
+    if (!Save.data.visited[npcKey]) {
+      Save.data.visited[npcKey] = true;
+      Save.save();
+    }
+  }
 }
 
-function exitApartment(){
-  if(scene!=='apartment')return;
-  const b=buildings[currentApt];
-  player.x=b.door.x*T;
-  player.y=(b.door.y+1)*T;
-  scene='city';
-  currentApt=null;
-  placingItem=null;
-  document.getElementById('h-loc').textContent='NEON CITY';
+// ============================================================
+// APARTMENT SCENE — Room Decorator
+// ============================================================
+class ApartmentScene extends Phaser.Scene {
+  constructor() { super('Apartment'); }
+  
+  create(data) {
+    this.cameras.main.fadeIn(300);
+    this.cameras.main.setBackgroundColor(0x0a0a0f);
+    
+    this.buildingId = data.buildingId;
+    this.isPlayer = data.isPlayer;
+    this.roomColor = data.color;
+    
+    const ROOM_W = 12;
+    const ROOM_H = 8;
+    this.roomW = ROOM_W;
+    this.roomH = ROOM_H;
+    
+    // Draw room
+    // Wall (top 2 rows)
+    for (let x = 0; x < ROOM_W; x++) {
+      for (let y = 0; y < 2; y++) {
+        this.add.image(x * TILE + TILE/2, y * TILE + TILE/2, 'tile_wall');
+      }
+    }
+    // Floor
+    for (let x = 0; x < ROOM_W; x++) {
+      for (let y = 2; y < ROOM_H; y++) {
+        this.add.image(x * TILE + TILE/2, y * TILE + TILE/2, 'tile_floor');
+      }
+    }
+    
+    // Room border (neon outline)
+    const border = this.add.rectangle(
+      ROOM_W * TILE / 2, ROOM_H * TILE / 2,
+      ROOM_W * TILE, ROOM_H * TILE
+    );
+    border.setStrokeStyle(2, this.roomColor, 0.6);
+    border.setFillStyle(0, 0);
+    
+    // Room name
+    this.add.text(ROOM_W * TILE / 2, -12, data.name, {
+      fontFamily: 'Orbitron', fontSize: '12px',
+      color: '#' + this.roomColor.toString(16).padStart(6, '0')
+    }).setOrigin(0.5).setShadow(0, 0, '#' + this.roomColor.toString(16).padStart(6, '0'), 6);
+    
+    // Place furniture
+    this.placedItems = this.add.group();
+    
+    if (this.isPlayer) {
+      // Load saved room
+      (Save.data.room || []).forEach(item => {
+        this.placeFurniture(item.id, item.x, item.y, false);
+      });
+    } else if (data.npcRoom) {
+      // NPC pre-decorated room
+      data.npcRoom.forEach(item => {
+        this.placeFurniture(item.id, item.x, item.y, false);
+      });
+    }
+    
+    // Camera
+    this.cameras.main.setZoom(2.5);
+    this.cameras.main.centerOn(ROOM_W * TILE / 2, ROOM_H * TILE / 2);
+    
+    // HUD
+    this.rpText = this.add.text(10, 10, '', {
+      fontFamily: 'Orbitron', fontSize: '10px', color: '#00f0ff'
+    }).setScrollFactor(0).setDepth(100);
+    
+    // Back button
+    const backBtn = this.add.text(10, this.cameras.main.height / this.cameras.main.zoom - 16, '← BACK [ESC]', {
+      fontFamily: 'Share Tech Mono', fontSize: '8px', color: '#ff00aa',
+      backgroundColor: '#0a0a0f88', padding: { x: 4, y: 2 }
+    }).setScrollFactor(0).setDepth(100).setInteractive();
+    
+    backBtn.on('pointerdown', () => this.exitRoom());
+    this.input.keyboard.on('keydown-ESC', () => this.exitRoom());
+    
+    // Inventory (player room only)
+    if (this.isPlayer) {
+      this.createInventoryUI();
+      this.selectedFurniture = null;
+      this.placementGrid = null;
+      
+      // Click to place
+      this.input.on('pointerdown', (pointer) => {
+        if (this.selectedFurniture && !pointer.wasTouch) {
+          const worldPoint = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
+          const gx = Math.floor(worldPoint.x / TILE);
+          const gy = Math.floor(worldPoint.y / TILE);
+          if (gx >= 0 && gx < ROOM_W && gy >= 0 && gy < ROOM_H) {
+            this.buyAndPlace(this.selectedFurniture, gx, gy);
+          }
+        }
+      });
+    }
+    
+    this.updateHUD();
+  }
+  
+  createInventoryUI() {
+    const startY = 30;
+    this.invItems = [];
+    
+    // Inventory label
+    this.add.text(this.cameras.main.width / this.cameras.main.zoom - 4, (startY - 10) / this.cameras.main.zoom, 'SHOP', {
+      fontFamily: 'Orbitron', fontSize: '7px', color: '#ff00aa'
+    }).setOrigin(1, 0).setScrollFactor(0).setDepth(100);
+    
+    const panelW = 70;
+    const camW = this.cameras.main.width / this.cameras.main.zoom;
+    
+    FURNITURE.slice(0, 12).forEach((f, i) => {
+      const row = Math.floor(i / 2);
+      const col = i % 2;
+      const bx = camW - panelW + col * 35 + 10;
+      const by = startY / this.cameras.main.zoom + row * 18;
+      
+      const btn = this.add.text(bx, by, f.name.substring(0, 6), {
+        fontFamily: 'Share Tech Mono', fontSize: '6px', color: '#8888aa',
+        backgroundColor: '#0a0a1a', padding: { x: 2, y: 1 }
+      }).setScrollFactor(0).setDepth(100).setInteractive();
+      
+      const cost = this.add.text(bx, by + 9, f.cost + 'rp', {
+        fontFamily: 'Share Tech Mono', fontSize: '5px', color: '#00f0ff'
+      }).setScrollFactor(0).setDepth(100);
+      
+      btn.on('pointerdown', () => {
+        this.selectedFurniture = f.id;
+        this.invItems.forEach(item => item.btn.setColor('#8888aa'));
+        btn.setColor('#00f0ff');
+      });
+      
+      btn.on('pointerover', () => btn.setColor('#00f0ff'));
+      btn.on('pointerout', () => {
+        if (this.selectedFurniture !== f.id) btn.setColor('#8888aa');
+      });
+      
+      this.invItems.push({ btn, cost, furniture: f });
+    });
+  }
+  
+  placeFurniture(id, gx, gy, animate = true) {
+    const f = FURNITURE.find(f => f.id === id);
+    if (!f) return;
+    
+    const sprite = this.add.image(
+      gx * TILE + (f.w * TILE) / 2,
+      gy * TILE + (f.h * TILE) / 2,
+      'furn_' + id
+    ).setDepth(5);
+    
+    if (animate) {
+      sprite.setScale(0.5).setAlpha(0.5);
+      this.tweens.add({
+        targets: sprite,
+        scale: 1, alpha: 1,
+        duration: 300,
+        ease: 'Back.easeOut'
+      });
+    }
+    
+    sprite.setData('furnitureId', id);
+    sprite.setData('gridX', gx);
+    sprite.setData('gridY', gy);
+    this.placedItems.add(sprite);
+    
+    return sprite;
+  }
+  
+  buyAndPlace(furnitureId, gx, gy) {
+    const f = FURNITURE.find(f => f.id === furnitureId);
+    if (!f) return;
+    
+    // Check bounds
+    if (gx + f.w > this.roomW || gy + f.h > this.roomH) return;
+    
+    // Check RP
+    if (!Save.spendRP(f.cost)) {
+      // Flash RP text red
+      this.rpText.setColor('#ff0000');
+      this.time.delayedCall(300, () => this.rpText.setColor('#00f0ff'));
+      return;
+    }
+    
+    this.placeFurniture(furnitureId, gx, gy, true);
+    
+    // Save
+    Save.data.room.push({ id: furnitureId, x: gx, y: gy });
+    Save.save();
+    
+    // Update quest progress
+    if (Save.data.quests.pixel_decorate) {
+      Save.data.quests.pixel_decorate.progress = Save.data.room.length;
+      if (Save.data.room.length >= 5 && !Save.data.quests.pixel_decorate.completed) {
+        Save.data.quests.pixel_decorate.completed = true;
+        Save.earnRP(50);
+        // TODO: show quest complete notification
+      }
+      Save.save();
+    }
+    
+    this.updateHUD();
+  }
+  
+  updateHUD() {
+    this.rpText.setText('⚡ ' + Save.data.rp + ' RP');
+  }
+  
+  exitRoom() {
+    this.cameras.main.fadeOut(300, 10, 10, 15);
+    this.time.delayedCall(300, () => this.scene.start('City'));
+  }
 }
 
-// ===== TAP BUTTON =====
-let tapCooldown=0;
-document.getElementById('tap-btn').onclick=()=>{
-  if(tapCooldown>0)return;
-  rp+=25;
-  tapCooldown=5000;
-  updateRP();
-  showToast('+25 RP!');
-  document.getElementById('tap-btn').classList.add('cooldown');
-  setTimeout(()=>document.getElementById('tap-btn').classList.remove('cooldown'),5000);
+// ============================================================
+// PHASER CONFIG
+// ============================================================
+const config = {
+  type: Phaser.AUTO,
+  parent: 'game-container',
+  width: 800,
+  height: 600,
+  pixelArt: true,
+  backgroundColor: '#0a0a0f',
+  scale: {
+    mode: Phaser.Scale.FIT,
+    autoCenter: Phaser.Scale.CENTER_BOTH,
+  },
+  scene: [BootScene, TitleScene, CityScene, ApartmentScene],
 };
 
-function updateRP(){
-  document.getElementById('h-rp').textContent=rp;
-  localStorage.setItem('cybr_rp',rp);
-}
+const game = new Phaser.Game(config);
 
-// ===== PLACE FURNITURE =====
-function placeItem(gx,gy){
-  if(!placingItem||scene!=='apartment'||currentApt!==3)return;
-  const def=FURNITURE[placingItem];
-  if(rp<def.cost){showToast('Not enough RP!');return}
-  if(gx<0||gx+def.w>APT_W||gy<0||gy+def.h>APT_H)return;
-  
-  rp-=def.cost;
-  updateRP();
-  buildings[3].furniture.push({t:placingItem,x:gx,y:gy});
-  localStorage.setItem('cybr_apt',JSON.stringify(buildings[3].furniture));
-  showToast(def.name+' placed!');
-  placingItem=null;
-}
-
-// ===== TOAST =====
-function showToast(msg){
-  toastText=msg;toastTimer=2000;
-  const el=document.getElementById('toast');el.textContent=msg;el.style.opacity=1;
-  setTimeout(()=>el.style.opacity=0,1500);
-}
-
-// ===== INPUT =====
-addEventListener('keydown',e=>{
-  keys[e.code]=true;
-  if(e.code==='KeyE'||e.code==='Space')interact();
-  if(e.code==='Escape'){
-    if(placingItem){placingItem=null}
-    else if(scene==='apartment')exitApartment();
-  }
-  if(e.code==='KeyI'){
-    invOpen=!invOpen;
-    document.getElementById('inventory').classList.toggle('open',invOpen);
-  }
-});
-addEventListener('keyup',e=>keys[e.code]=false);
-
-document.getElementById('inv-toggle').onclick=()=>{
-  invOpen=!invOpen;
-  document.getElementById('inventory').classList.toggle('open',invOpen);
-};
-
-// D-pad
-document.querySelectorAll('.dpad-btn').forEach(btn=>{
-  const dir=btn.dataset.dir;
-  const start=()=>{if(dir==='act')interact();else keys[dir]=true};
-  const end=()=>{if(dir!=='act')keys[dir]=false};
-  btn.addEventListener('touchstart',e=>{e.preventDefault();start()});
-  btn.addEventListener('touchend',e=>{e.preventDefault();end()});
-  btn.addEventListener('mousedown',start);
-  btn.addEventListener('mouseup',end);
-});
-
-// Mouse for furniture placing
-C.addEventListener('mousemove',e=>{
-  if(scene==='apartment'&&placingItem){
-    const ox=(W-APT_W*T)/2, oy=60+(H-60-APT_H*T)/2;
-    mouseGrid.x=Math.floor((e.clientX-ox)/T);
-    mouseGrid.y=Math.floor((e.clientY-oy)/T);
-  }
-});
-C.addEventListener('click',e=>{
-  if(scene==='apartment'&&placingItem){
-    const ox=(W-APT_W*T)/2, oy=60+(H-60-APT_H*T)/2;
-    const gx=Math.floor((e.clientX-ox)/T);
-    const gy=Math.floor((e.clientY-oy)/T);
-    placeItem(gx,gy);
-  }
-});
-C.addEventListener('contextmenu',e=>{e.preventDefault();placingItem=null});
-
-// Touch for mobile apartment placing
-C.addEventListener('touchstart',e=>{
-  if(scene==='apartment'&&placingItem){
-    const touch=e.touches[0];
-    const ox=(W-APT_W*T)/2, oy=60+(H-60-APT_H*T)/2;
-    const gx=Math.floor((touch.clientX-ox)/T);
-    const gy=Math.floor((touch.clientY-oy)/T);
-    placeItem(gx,gy);
-  }
-});
-
-// ===== UTILS =====
-function hexToRgb(hex){
-  const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
-  return `${r},${g},${b}`;
-}
-
-// ===== PROCEDURAL SYNTHWAVE-LOFI MUSIC ENGINE =====
-let audioCtx=null, musicPlaying=false, musicMuted=false;
-const BPM=78, BEAT=60/BPM, BAR=BEAT*4;
-let masterGain=null, nextBeat=0, beatIndex=0;
-
-// Chord progression: Am - F - C - G (classic lofi)
-const CHORDS=[
-  [220.00,261.63,329.63],  // Am: A3 C4 E4
-  [174.61,220.00,261.63],  // F:  F3 A3 C4
-  [130.81,164.81,196.00],  // C:  C3 E3 G3
-  [146.83,196.00,246.94],  // G:  G3 B3 D4  -- keep it mellow, lower voicing
-];
-// Bass notes for each chord
-const BASS=[110,87.31,65.41,73.42]; // A2 F2 C2 G2
-
-function initAudio(){
-  if(audioCtx)return;
-  audioCtx=new(window.AudioContext||window.webkitAudioContext)();
-  masterGain=audioCtx.createGain();
-  masterGain.gain.value=0.35;
-  masterGain.connect(audioCtx.destination);
-  nextBeat=audioCtx.currentTime+0.05;
-  beatIndex=0;
-  musicPlaying=true;
-  scheduleBeat();
-}
-
-function scheduleBeat(){
-  if(!musicPlaying)return;
-  while(nextBeat<audioCtx.currentTime+0.2){
-    const t=nextBeat;
-    const bar=Math.floor(beatIndex/4)%4;
-    const beat=beatIndex%4;
-
-    // --- KICK on beats 0,2 ---
-    if(beat===0||beat===2)playKick(t);
-    // --- SNARE on beats 1,3 ---
-    if(beat===1||beat===3)playSnare(t);
-    // --- HI-HAT every beat + offbeats ---
-    playHiHat(t);
-    playHiHat(t+BEAT*0.5, 0.03);
-
-    // --- BASS on beat 0 of each bar, sustained ---
-    if(beat===0)playBass(BASS[bar],t,BAR*0.9);
-
-    // --- CHORD PAD: trigger on beat 0, sustain whole bar ---
-    if(beat===0)playPad(CHORDS[bar],t,BAR*0.95);
-
-    // --- MELODY (simple arp on beats) ---
-    const chord=CHORDS[bar];
-    const noteIdx=(beatIndex)%3;
-    playArp(chord[noteIdx]*2,t,BEAT*0.6); // octave up
-
-    beatIndex++;
-    nextBeat+=BEAT;
-  }
-  if(musicPlaying)setTimeout(scheduleBeat,100);
-}
-
-function playKick(t){
-  const o=audioCtx.createOscillator();
-  const g=audioCtx.createGain();
-  o.type='sine';o.frequency.setValueAtTime(150,t);
-  o.frequency.exponentialRampToValueAtTime(30,t+0.12);
-  g.gain.setValueAtTime(0.6,t);
-  g.gain.exponentialRampToValueAtTime(0.001,t+0.25);
-  o.connect(g);g.connect(masterGain);
-  o.start(t);o.stop(t+0.25);
-}
-
-function playSnare(t){
-  // noise burst
-  const len=0.12, sr=audioCtx.sampleRate;
-  const buf=audioCtx.createBuffer(1,sr*len,sr);
-  const d=buf.getChannelData(0);
-  for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1);
-  const n=audioCtx.createBufferSource();n.buffer=buf;
-  const g=audioCtx.createGain();
-  g.gain.setValueAtTime(0.12,t);
-  g.gain.exponentialRampToValueAtTime(0.001,t+len);
-  const f=audioCtx.createBiquadFilter();f.type='highpass';f.frequency.value=3000;
-  n.connect(f);f.connect(g);g.connect(masterGain);
-  n.start(t);n.stop(t+len);
-  // body tone
-  const o=audioCtx.createOscillator();
-  const g2=audioCtx.createGain();
-  o.type='triangle';o.frequency.setValueAtTime(180,t);
-  o.frequency.exponentialRampToValueAtTime(60,t+0.06);
-  g2.gain.setValueAtTime(0.18,t);
-  g2.gain.exponentialRampToValueAtTime(0.001,t+0.08);
-  o.connect(g2);g2.connect(masterGain);
-  o.start(t);o.stop(t+0.08);
-}
-
-function playHiHat(t,vol=0.06){
-  const len=0.05, sr=audioCtx.sampleRate;
-  const buf=audioCtx.createBuffer(1,sr*len,sr);
-  const d=buf.getChannelData(0);
-  for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1);
-  const n=audioCtx.createBufferSource();n.buffer=buf;
-  const g=audioCtx.createGain();
-  g.gain.setValueAtTime(vol,t);
-  g.gain.exponentialRampToValueAtTime(0.001,t+len);
-  const f=audioCtx.createBiquadFilter();f.type='highpass';f.frequency.value=7000;
-  n.connect(f);f.connect(g);g.connect(masterGain);
-  n.start(t);n.stop(t+len);
-}
-
-function playBass(freq,t,dur){
-  const o=audioCtx.createOscillator();
-  const g=audioCtx.createGain();
-  const f=audioCtx.createBiquadFilter();
-  o.type='sawtooth';o.frequency.value=freq;
-  f.type='lowpass';f.frequency.setValueAtTime(300,t);
-  // lofi filter sweep
-  f.frequency.linearRampToValueAtTime(600,t+dur*0.3);
-  f.frequency.linearRampToValueAtTime(250,t+dur);
-  g.gain.setValueAtTime(0.22,t);
-  g.gain.setValueAtTime(0.22,t+dur*0.8);
-  g.gain.exponentialRampToValueAtTime(0.001,t+dur);
-  o.connect(f);f.connect(g);g.connect(masterGain);
-  o.start(t);o.stop(t+dur+0.01);
-}
-
-function playPad(notes,t,dur){
-  notes.forEach((freq,i)=>{
-    const o=audioCtx.createOscillator();
-    const g=audioCtx.createGain();
-    const f=audioCtx.createBiquadFilter();
-    o.type='sawtooth';
-    // slight detune for warmth
-    o.frequency.value=freq;
-    o.detune.value=(i-1)*8;
-    f.type='lowpass';
-    // slow filter sweep for that lofi warmth
-    f.frequency.setValueAtTime(800,t);
-    f.frequency.linearRampToValueAtTime(1400,t+dur*0.4);
-    f.frequency.linearRampToValueAtTime(600,t+dur);
-    f.Q.value=2;
-    g.gain.setValueAtTime(0,t);
-    g.gain.linearRampToValueAtTime(0.045,t+0.1);
-    g.gain.setValueAtTime(0.045,t+dur*0.7);
-    g.gain.exponentialRampToValueAtTime(0.001,t+dur);
-    o.connect(f);f.connect(g);g.connect(masterGain);
-    o.start(t);o.stop(t+dur+0.01);
-  });
-}
-
-function playArp(freq,t,dur){
-  const o=audioCtx.createOscillator();
-  const g=audioCtx.createGain();
-  const f=audioCtx.createBiquadFilter();
-  o.type='triangle';o.frequency.value=freq;
-  f.type='lowpass';f.frequency.value=2000;f.Q.value=1;
-  g.gain.setValueAtTime(0,t);
-  g.gain.linearRampToValueAtTime(0.07,t+0.02);
-  g.gain.setValueAtTime(0.07,t+dur*0.5);
-  g.gain.exponentialRampToValueAtTime(0.001,t+dur);
-  o.connect(f);f.connect(g);g.connect(masterGain);
-  o.start(t);o.stop(t+dur+0.01);
-}
-
-// Start overlay
-document.getElementById('start-overlay').addEventListener('click',()=>{
-  document.getElementById('start-overlay').style.display='none';
-  initAudio();
-});
-
-// Music toggle
-document.getElementById('music-btn').addEventListener('click',()=>{
-  if(!audioCtx)return;
-  musicMuted=!musicMuted;
-  masterGain.gain.linearRampToValueAtTime(musicMuted?0:0.35,audioCtx.currentTime+0.1);
-  const btn=document.getElementById('music-btn');
-  btn.textContent=musicMuted?'🔇':'🔊';
-  btn.classList.toggle('muted',musicMuted);
-});
-
-// Also handle M key for music toggle
-addEventListener('keydown',e=>{
-  if(e.code==='KeyM'&&audioCtx){
-    document.getElementById('music-btn').click();
-  }
-});
-
-// ===== GAME LOOP =====
-let lastTime=0;
-function loop(time){
-  const dt=time-lastTime;lastTime=time;
-  if(tapCooldown>0)tapCooldown-=dt;
-  
-  update(dt);
-  
-  if(scene==='city'){renderCity(time);renderMinimap()}
-  else renderApartment(time);
-  
-  // prompt
-  const pel=document.getElementById('prompt');
-  pel.textContent=promptText;
-  pel.style.opacity=promptText?1:0;
-  
-  requestAnimationFrame(loop);
-}
-requestAnimationFrame(loop);
-
-updateRP();
 </script>
 </body>
 </html>
